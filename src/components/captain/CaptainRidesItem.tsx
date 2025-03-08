@@ -84,11 +84,11 @@ const CaptainRidesItem: FC<{item: RideItem, removeIt: () => void}> = ({item, rem
 
                 <CustomText fontFamily='SemiBold' fontSize={11}>
                     {
-                        location && calculateDistance(
-                            item?.pickup?.latitude,
-                            item?.pickup?.longitude,
-                            location?.latitude,
-                            location?.longitude,
+                        location && calculateDistance({
+                          lat1:  item?.pickup?.latitude,
+                          lon1:  item?.pickup?.longitude,
+                          lat2:  location?.latitude,
+                          lon2:  location?.longitude,}
                         ).toFixed(2) || "--"
                     } Km
                 </CustomText>
