@@ -13,18 +13,33 @@ import { useWS } from '@/service/WSProvider'
 const Auth = () => {
     const {updateAccessToken} = useWS()
     const [phone, setPhone] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const handleNext = async () => {
-    
-            if(!phone && phone.length !== 8){
-                Alert.alert("Bro....pon tu numero de cel")
+        try {
+            setLoading(true)
+            
+            // Validación del número
+            if (!phone || phone.length !== 8) {
+                Alert.alert("Número requerido", "Por favor ingresa tu número de 8 dígitos")
                 return
             }
-            signin({
+
+            // Llamada asíncrona con await
+            await signin({
                 role: "captain",
                 phone
             }, updateAccessToken)
+
+        } catch (error) {
+            // Manejo de errores
+            console.error("Error en autenticación:", error)
+            Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión")
+        } finally {
+            // Siempre quitamos el loading
+            setLoading(false)
         }
+    }
 
   return (
     <SafeAreaView style={authStyles.container}>
@@ -61,8 +76,8 @@ const Auth = () => {
                 <CustomButton
                     title="Siguiente"
                     onPress={handleNext}
-                    loading={false}
-                    disabled={false}
+                    loading={loading}
+                    disabled={loading}
                 />
             </View>
 

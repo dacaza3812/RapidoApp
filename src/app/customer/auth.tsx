@@ -13,17 +13,28 @@ import { useWS } from '@/service/WSProvider'
 const Auth = () => {
     const {updateAccessToken} = useWS()
     const [phone, setPhone] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const handleNext = async () => {
+        try {
+            setLoading(true)
+            if(!phone && phone.length !== 8){
+                Alert.alert("Bro....pon tu numero de cel")
+                return
+            }
+            await signin({
+                role: "customer",
+                phone
+            }, updateAccessToken)
 
-        if(!phone && phone.length !== 8){
-            Alert.alert("Bro....pon tu numero de cel")
-            return
+        } catch (error) {
+            console.error("Error en autenticación:", error)
+            Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión")
+        } finally {
+            setLoading(false)
         }
-        signin({
-            role: "customer",
-            phone
-        }, updateAccessToken)
+
+       
     }
 
   return (
@@ -61,8 +72,8 @@ const Auth = () => {
                 <CustomButton
                     title="Siguiente"
                     onPress={handleNext}
-                    loading={false}
-                    disabled={false}
+                    loading={loading}
+                    disabled={loading}
                 />
             </View>
 
