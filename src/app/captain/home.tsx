@@ -74,8 +74,8 @@ const Home = () => {
     }
   }, [onDuty, on, off, isFocused])
 
-  const removeRide = (id:string) => {
-    setRideOffers((prevOffers) => prevOffers.filter((offer) => offer.id !== id));
+  const removeRide = (id: string) => {
+    setRideOffers((prevOffers) => prevOffers.filter((offer) => offer._id !== id));
   }
 
   const renderRides = ({item}: any) => {

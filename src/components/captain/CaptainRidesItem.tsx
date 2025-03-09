@@ -105,12 +105,17 @@ const CaptainRidesItem: FC<{item: RideItem, removeIt: () => void}> = ({item, rem
             </View>
 
             <View style={orderStyles?.flexRowEnd}>
-                <TouchableOpacity>
-                    <Ionicons name='close-circle' size={24} color="black"/>
-                </TouchableOpacity>
+    <TouchableOpacity onPress={removeIt}>
+        <Ionicons name='close-circle' size={24} color="black"/>
+    </TouchableOpacity>
 
-                <CounterButton onCountdownEnd={removeIt} initialCount={12} onPress={acceptRide} title="Aceptar" />
-            </View>
+    <CounterButton 
+      onCountdownEnd={removeIt} 
+      initialCount={12} 
+      onPress={acceptRide} 
+      title="Aceptar" 
+    />
+</View>
         
     </Animated.View>
   )
