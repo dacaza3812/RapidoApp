@@ -1,9 +1,9 @@
 // RideBooking.tsx
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StatusBar, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StatusBar, ScrollView, TouchableOpacity, Image, SafeAreaView, FlatList } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useUserStore } from '@/store/userStore';
-import { calculateFare } from '@/utils/mapUtils';
+import { calculateFare, calculateEstimatedArrival } from '@/utils/mapUtils';
 import { rideStyles } from '@/styles/rideStyles';
 import CustomText from '@/components/shared/CustomText';
 import { commonStyles } from '@/styles/commonStyles';
@@ -14,16 +14,6 @@ import CustomButton from '@/components/shared/CustomButton';
 import RoutesMap from '@/components/customer/RoutesMap';
 import { createRide } from '@/service/rideService';
 
-// Función que calcula la hora estimada de llegada dado una distancia (en km)
-// y una velocidad promedio (en km/h)
-const calculateEstimatedArrival = (distance: number, averageSpeed: number): Date => {
-  // Calcula el tiempo de viaje en minutos
-  const travelTimeMinutes = (distance / averageSpeed) * 60;
-  const arrivalDate = new Date();
-  arrivalDate.setMinutes(arrivalDate.getMinutes() + travelTimeMinutes);
-  return arrivalDate;
-};
-
 const RideBooking = () => {
   const route = useRoute() as any;
   const item = route?.params as any;
@@ -31,22 +21,19 @@ const RideBooking = () => {
   const [selectedOption, setSelectedOption] = useState("Motocicleta");
   const [loading, setLoading] = useState(false);
 
-  // Cálculo de las tarifas basado en la distancia
-  const farePrices = useMemo(
-    () => calculateFare(parseFloat(item?.distanceInKm)),
-    [item?.distanceInKm]
-  );
+  // Calcula las tarifas basadas en la distancia
+  const farePrices = useMemo(() => calculateFare(parseFloat(item?.distanceInKm)), [item?.distanceInKm]);
 
-  // Estado para mantener el tiempo actual (para recalcular el ETA)
+  // Estado para el tiempo actual, se actualizará cada minuto
   const [currentTime, setCurrentTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // Actualiza cada minuto
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Definición de velocidades promedio según el tipo de vehículo
+  // Definición de velocidades promedio (en km/h) para cada medio de transporte
   const averageSpeeds: Record<string, number> = {
     "Motocicleta": 40,
     "Triciclo": 30,
@@ -54,7 +41,7 @@ const RideBooking = () => {
     "Auto Premium": 45,
   };
 
-  // Opciones base de viaje sin ETA (se completan a continuación)
+  // Opciones base de viaje sin ETA
   const baseRideOptions = [
     {
       type: "Motocicleta",
@@ -86,15 +73,18 @@ const RideBooking = () => {
     },
   ];
 
-  // Para cada opción, calculamos el ETA usando la velocidad promedio correspondiente
+  // Para cada opción, se calcula el ETA usando calculateEstimatedArrival con la velocidad específica
   const rideOptions = useMemo(() => {
+    const distance = parseFloat(item?.distanceInKm);
     return baseRideOptions.map((ride) => {
       const avgSpeed = averageSpeeds[ride.type];
-      const distance = parseFloat(item?.distanceInKm);
       const estimatedArrivalDate = calculateEstimatedArrival(distance, avgSpeed);
       const diffMs = estimatedArrivalDate.getTime() - currentTime.getTime();
       const dynamicArrivalMinutes = Math.max(Math.round(diffMs / 60000), 0);
-      const arrivalTimeString = estimatedArrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const arrivalTimeString = estimatedArrivalDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
       return {
         ...ride,
         time: `${dynamicArrivalMinutes} min`,
@@ -135,37 +125,27 @@ const RideBooking = () => {
   return (
     <View style={rideStyles.container}>
       <StatusBar barStyle="light-content" backgroundColor="orange" translucent={false} />
-
       {item?.drop_latitude && location?.latitude && (
         <RoutesMap
           drop={{ latitude: parseFloat(item?.drop_latitude), longitude: parseFloat(item?.drop_longitude) }}
           pickup={{ latitude: parseFloat(location?.latitude), longitude: parseFloat(location?.longitude) }}
         />
       )}
-
       <View style={rideStyles.rideSelectionContainer}>
         <View style={rideStyles.offerContainer}>
           <CustomText fontSize={12} style={rideStyles.offerText}>
             Has obtenido $10 de descuento
           </CustomText>
         </View>
-
         <ScrollView contentContainerStyle={rideStyles.scrollContainer} showsVerticalScrollIndicator={false}>
           {rideOptions.map((ride, index) => (
-            <RideOption
-              key={index}
-              ride={ride}
-              selected={selectedOption}
-              onSelect={handleOptionSelect}
-            />
+            <RideOption key={index} ride={ride} selected={selectedOption} onSelect={handleOptionSelect} />
           ))}
         </ScrollView>
       </View>
-
       <TouchableOpacity style={rideStyles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={RFValue(14)} style={{ left: 0 }} color="black" />
       </TouchableOpacity>
-
       <View style={rideStyles.bookingContainer}>
         <View style={commonStyles.flexRowBetween}>
           <View style={[rideStyles.couponContainer, { borderRightWidth: 1, borderRightColor: "#ccc" }]}>
@@ -180,7 +160,6 @@ const RideBooking = () => {
             </View>
             <Ionicons name="chevron-forward" size={RFValue(14)} color="#777" />
           </View>
-
           <View style={rideStyles.couponContainer}>
             <Image source={require("@/assets/icons/coupon.png")} style={rideStyles.icon} />
             <View>
@@ -194,7 +173,6 @@ const RideBooking = () => {
             <Ionicons name="chevron-forward" size={RFValue(14)} color="#777" />
           </View>
         </View>
-
         <CustomButton title="Realizar Viaje" disabled={loading} loading={loading} onPress={handleRideBooking} />
       </View>
     </View>
@@ -221,9 +199,7 @@ const RideOption = React.memo(({ ride, selected, onSelect }: any) => (
           ${ride?.price?.toFixed(2)}
         </CustomText>
         {selected === ride.type && (
-          <Text style={rideStyles.discountedPrice}>
-            ${Number(ride?.price + 10).toFixed(2)}
-          </Text>
+          <Text style={rideStyles.discountedPrice}>${Number(ride?.price + 10).toFixed(2)}</Text>
         )}
       </View>
     </View>
