@@ -79,7 +79,7 @@ const CaptainRidesItem: FC<{item: RideItem, removeIt: () => void}> = ({item, rem
         <View style={[commonStyles?.flexRowGap]}>
             <View>
                 <CustomText fontFamily='Medium' fontSize={9} style={orderStyles.label}>
-                    Pickup
+                    Recogida
                 </CustomText>
 
                 <CustomText fontFamily='SemiBold' fontSize={11}>
@@ -96,7 +96,7 @@ const CaptainRidesItem: FC<{item: RideItem, removeIt: () => void}> = ({item, rem
 
             <View style={orderStyles.borderLine}>
                 <CustomText fontFamily='Medium' fontSize={9} style={orderStyles.label}>
-                    Drop
+                    Destino
                 </CustomText>
                 <CustomText fontFamily='SemiBold' fontSize={11}>
                     {item?.distance.toFixed(2)} Km
