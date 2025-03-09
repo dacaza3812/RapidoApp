@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect } from 'react'
 import { useWS } from '@/service/WSProvider';
 import { rideStyles } from '@/styles/rideStyles';
 import { commonStyles } from '@/styles/commonStyles';
@@ -7,6 +7,7 @@ import { vehicleIcons } from '@/utils/mapUtils';
 import CustomText from '../shared/CustomText';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { resetAndNavigate } from '@/utils/Helpers';
+import { Link } from 'expo-router';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
@@ -21,10 +22,8 @@ interface RideItem {
   status: string
 }
 
-
 const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
   
-
   useEffect(()=> {
     if(item?.status === "COMPLETED"){
       console.log(item?.status)
@@ -46,23 +45,25 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
           }
 
           <View>
-          <CustomText fontSize={10}>
-            {
-              item?.status === "START" ? "Choferes cerca de ti" :
-                item?.status === "ARRIVED"
-                  ? "HAPPY JOURNEY" :
-                  "WHOOOOO 😎"
-            }
-          </CustomText>
+            <CustomText fontSize={10}>
+              {
+                item?.status === "START" ? "Choferes cerca de ti" :
+                  item?.status === "ARRIVED"
+                    ? "HAPPY JOURNEY" :
+                    "WHOOOOO 😎"
+              }
+            </CustomText>
 
-          <CustomText>
-            {item?.status === "START" ? `OTP - ${item?.otp}` : " "}
-          </CustomText>
+            <CustomText>
+              {item?.status === "START" ? `OTP - ${item?.otp}` : " "}
+            </CustomText>
           </View>
         </View>
 
         <CustomText fontSize={11} numberOfLines={1} fontFamily='Medium'>
-          +53 {item?.captain?.phone && item?.captain?.phone?.slice(0, 5) + " " + item?.captain?.phone?.slice(5)}
+          <Link style={{textDecorationLine: "underline"}} href={`tel:${item?.captain?.phone}`}>
+            +53 {item?.captain?.phone && item?.captain?.phone?.slice(0, 5) + " " + item?.captain?.phone?.slice(5)}
+          </Link>
         </CustomText>
       </View>
 
@@ -87,7 +88,6 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
 
         <View style={{ marginVertical: 20 }}>
           <View style={[commonStyles.flexRowBetween]}>
-
             <View style={commonStyles.flexRow}>
               <MaterialCommunityIcons name='credit-card' size={24} color="black" />
               <CustomText style={{ marginLeft: 10 }} fontFamily='SemiBold'>
@@ -106,24 +106,37 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
         </View>
       </View>
 
-            <View style={rideStyles.bottomButtonContainer}>
-              <TouchableOpacity style={rideStyles.cancelButton} onPress={() => { emit("cancelRide", item?._id)}}>
-                <CustomText style={rideStyles.backButtonText}>
-                  Cancelar
-                </CustomText>
-              </TouchableOpacity>
+      <View style={rideStyles.bottomButtonContainer}>
+        <TouchableOpacity 
+          style={rideStyles.cancelButton} 
+          onPress={() => { 
+            if(item?.status !== "START"){
+              Alert.alert("Acción no permitida", "No puedes cancelar este viaje en este estado.");
+              return;
+            }
+            emit("cancelRide", item?._id)
+          }}
+        >
+          <CustomText style={rideStyles.backButtonText}>
+            Cancelar
+          </CustomText>
+        </TouchableOpacity>
 
-              <TouchableOpacity style={rideStyles.backButton2} onPress={() => {
-                if(item?.status === "COMPLETED") {
-                  resetAndNavigate("/customer/home")
-                  return
-                }
-              }}>
-                <CustomText style={rideStyles.backButtonText}>
-                  Atrás
-                </CustomText>
-              </TouchableOpacity>
-            </View>
+        <TouchableOpacity 
+          style={rideStyles.backButton2} 
+          onPress={() => {
+            if(item?.status !== "START"){
+              Alert.alert("Acción no permitida", "No puedes ir atrás en este estado.");
+              return;
+            }
+            resetAndNavigate("/customer/home")
+          }}
+        >
+          <CustomText style={rideStyles.backButtonText}>
+            Atrás
+          </CustomText>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }
