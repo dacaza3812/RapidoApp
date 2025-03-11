@@ -9,6 +9,7 @@ import {jwtDecode} from 'jwt-decode'
 import { tokenStorage } from '@/store/storage'
 import { refresh_tokens } from '@/service/apiInterceptors'
 import { useUserStore } from '@/store/userStore'
+import Test from '@/components/shared/Test'
 
 interface DecodedToken {
   exp: number
@@ -80,6 +81,7 @@ const Main = () => {
       source={require("@/assets/images/logo_t.png")}
         style={splashStyles.img}
       />
+      <Test/>
       <CustomText variant='h8' fontFamily='Light' style={splashStyles.text}>
         Desarrollado con ❤ en 🇨🇺
       </CustomText>
