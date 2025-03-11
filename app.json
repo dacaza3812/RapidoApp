@@ -29,6 +29,7 @@
           "apiKey": "AIzaSyD0o9J_DVjl6z8flmxGNTN9-DD9i112y8o"
         }
       },
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
