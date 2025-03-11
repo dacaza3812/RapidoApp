@@ -18,6 +18,8 @@
     "@expo/vector-icons": "^14.0.2",
     "@gorhom/bottom-sheet": "^5.0.6",
     "@mapbox/polyline": "^1.2.1",
+    "@react-native-firebase/app": "^21.12.0",
+    "@react-native-firebase/messaging": "^21.12.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "axios": "^1.7.9",
@@ -34,6 +36,7 @@
     "expo-status-bar": "~2.0.0",
     "expo-symbols": "~0.2.0",
     "expo-system-ui": "~4.0.6",
+    "expo-updates": "~0.26.18",
     "expo-web-browser": "~14.0.1",
     "haversine-distance": "^1.2.3",
     "jwt-decode": "^4.0.0",
@@ -55,8 +58,7 @@
     "react-native-webview": "13.12.5",
     "rn-swipe-button": "^2.0.0",
     "socket.io-client": "^4.8.1",
-    "zustand": "^5.0.3",
-    "expo-updates": "~0.26.18"
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

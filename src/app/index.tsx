@@ -1,4 +1,4 @@
-import { View, Image, Alert } from 'react-native'
+import { View, Image, Alert,  } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { commonStyles } from '@/styles/commonStyles'
 import { splashStyles } from '@/styles/splashStyles'
@@ -9,12 +9,14 @@ import {jwtDecode} from 'jwt-decode'
 import { tokenStorage } from '@/store/storage'
 import { refresh_tokens } from '@/service/apiInterceptors'
 import { useUserStore } from '@/store/userStore'
-
 interface DecodedToken {
   exp: number
 }
 
+
+
 const Main = () => {
+  
   const [loaded] = useFonts({
     Bold: require("../assets/fonts/NotoSans-Bold.ttf"),
     Regular: require("../assets/fonts/NotoSans-Regular.ttf"),
@@ -22,7 +24,7 @@ const Main = () => {
     Light: require("../assets/fonts/NotoSans-Light.ttf"),
     SemiBold: require("../assets/fonts/NotoSans-SemiBold.ttf"),
   })
-
+  
   const {user} = useUserStore()
 
   const [hasNavigated, setHasNavigated] = useState(false)

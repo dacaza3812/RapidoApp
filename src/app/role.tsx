@@ -1,9 +1,9 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { View, PermissionsAndroid, Image, TouchableOpacity } from 'react-native'
+import React, { useEffect } from 'react'
 import { roleStyles } from '@/styles/roleStyles'
 import CustomText from '@/components/shared/CustomText'
 import { router } from 'expo-router'
-
+import messaging from "@react-native-firebase/messaging"
 const Role = () => {
     const handleCustomerPress = () => {
         router.navigate("/customer/auth")
@@ -12,6 +12,25 @@ const Role = () => {
     const handleCaptainPress = () => {
         router.navigate("/captain/auth")
     }
+    async function requestUserPermision(){
+      const authStatus = await messaging().requestPermission();
+      const enabled = authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    
+      if(enabled){
+        console.log("Auth Status ", authStatus);
+      }
+    }
+PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+
+const getToken = async () => {
+  const token = await messaging().getToken()
+  console.log(token);
+}
+
+useEffect(() => {
+  requestUserPermision();
+  getToken()
+}, [])
 
   return (
     <View style={roleStyles.container}>
