@@ -5,6 +5,7 @@ import {gestureHandlerRootHOC} from 'react-native-gesture-handler'
 import { WSProvider } from '@/service/WSProvider'
 
 const Layout = () => {
+  console.log("LAYOYT")
   return (
     <WSProvider>
       <Stack screenOptions={{headerShown: false}}>

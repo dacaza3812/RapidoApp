@@ -8,7 +8,7 @@ import { resetAndNavigate } from '@/utils/Helpers'
 import {jwtDecode} from 'jwt-decode'
 import { tokenStorage } from '@/store/storage'
 import { refresh_tokens } from '@/service/apiInterceptors'
-
+import messaging from '@react-native-firebase/messaging';
 import { useUserStore } from '@/store/userStore'
 
 interface DecodedToken {
@@ -18,7 +18,9 @@ interface DecodedToken {
 
 
 const Main = () => {
-  
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+    console.log('Message handled in the background!', remoteMessage);
+  });
 
   const [loaded] = useFonts({
     Bold: require("../assets/fonts/NotoSans-Bold.ttf"),
