@@ -1,4 +1,4 @@
-import { View, Image, Alert,  } from 'react-native'
+import { View, Image, Alert,PermissionsAndroid  } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { commonStyles } from '@/styles/commonStyles'
 import { splashStyles } from '@/styles/splashStyles'
@@ -8,7 +8,9 @@ import { resetAndNavigate } from '@/utils/Helpers'
 import {jwtDecode} from 'jwt-decode'
 import { tokenStorage } from '@/store/storage'
 import { refresh_tokens } from '@/service/apiInterceptors'
+
 import { useUserStore } from '@/store/userStore'
+
 interface DecodedToken {
   exp: number
 }
@@ -17,6 +19,7 @@ interface DecodedToken {
 
 const Main = () => {
   
+
   const [loaded] = useFonts({
     Bold: require("../assets/fonts/NotoSans-Bold.ttf"),
     Regular: require("../assets/fonts/NotoSans-Regular.ttf"),
@@ -69,6 +72,7 @@ const Main = () => {
     if(loaded && !hasNavigated){
       const timeoutId = setTimeout(()=> {
         tokenCheck()
+        
         setHasNavigated(true)
       }, 1000);
       return () => clearTimeout(timeoutId)
