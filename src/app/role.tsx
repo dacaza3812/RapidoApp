@@ -24,7 +24,6 @@ if (!getApps().length) {
 const messaging = getMessaging();
 
 const Role = () => {
-  const [messagePush, setMessagePush] = useState("");
 
   const handleCustomerPress = () => {
     router.navigate("/customer/auth");
@@ -75,14 +74,16 @@ const Role = () => {
     fetchToken();
 
     // Suscribirse a onMessage para recibir notificaciones en primer plano
+
+    
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Mensaje recibido:', payload.notification?.title);
-      Alert.alert(payload.notification?.title || '');
-      setMessagePush(payload.notification?.title || '');
+      Alert.alert(payload.notification?.title || '', payload.notification?.body);
+      
     });
 
     // Limpiar la suscripción al desmontar el componente
-    return () => unsubscribe();
+    return () => unsubscribe();  
   }, []);
 
   return (
