@@ -1,5 +1,5 @@
 import { View, SafeAreaView, Image, TouchableOpacity, Alert } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { authStyles } from '@/styles/authStyles'
 import { ScrollView } from 'react-native-gesture-handler'
 import { commonStyles } from '@/styles/commonStyles'
@@ -9,16 +9,21 @@ import PhoneInput from '@/components/shared/PhoneInput'
 import CustomButton from '@/components/shared/CustomButton'
 import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
+import { getApps, initializeApp } from '@react-native-firebase/app'
+import { firebaseConfig } from '@/service/config'
+import { getMessaging, getToken } from '@react-native-firebase/messaging'
+import useGetFirebaseToken from '@/service/useGetFirebaseToken'
+
 
 const Auth = () => {
     const {updateAccessToken} = useWS()
     const [phone, setPhone] = useState("")
     const [loading, setLoading] = useState(false)
+    const {firebasePushToken} = useGetFirebaseToken()
 
     const handleNext = async () => {
-        try {
+        try {      
             setLoading(true)
-            
             // Validación del número
             if (!phone || phone.length !== 8) {
                 Alert.alert("Número requerido", "Por favor ingresa tu número de 8 dígitos")
@@ -28,7 +33,8 @@ const Auth = () => {
             // Llamada asíncrona con await
             await signin({
                 role: "captain",
-                phone
+                phone,
+                firebasePushToken,
             }, updateAccessToken)
 
         } catch (error) {
