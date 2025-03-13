@@ -8,7 +8,8 @@ import { BASE_URL } from "./config"
 
 export const signin = async (payload: {
     role: "customer" | "captain",
-    phone: string
+    phone: string, 
+    firebasePushToken: string | null
 },
     updateAccessToken: () => void
 ) => {
@@ -17,6 +18,7 @@ export const signin = async (payload: {
 
     try {
         const res = await axios.post(`${BASE_URL}/auth/signin`, payload);
+        console.log(res.data)
         if(res.data.user.role === "customer"){
             setUser(res.data.user)
         }else{
