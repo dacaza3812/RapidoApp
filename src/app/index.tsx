@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { View, Image, Alert,PermissionsAndroid  } from 'react-native'
-=======
 import { View, Image, Alert,  } from 'react-native'
->>>>>>> 4f16ab7 (probando con firebase)
 import React, { useEffect, useState } from 'react'
 import { commonStyles } from '@/styles/commonStyles'
 import { splashStyles } from '@/styles/splashStyles'
@@ -21,14 +17,7 @@ interface DecodedToken {
 
 
 const Main = () => {
-<<<<<<< HEAD
-  messaging().setBackgroundMessageHandler(async remoteMessage => {
-    console.log('Message handled in the background!', remoteMessage);
-  });
-
-=======
   
->>>>>>> 4f16ab7 (probando con firebase)
   const [loaded] = useFonts({
     Bold: require("../assets/fonts/NotoSans-Bold.ttf"),
     Regular: require("../assets/fonts/NotoSans-Regular.ttf"),
