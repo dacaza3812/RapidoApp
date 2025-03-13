@@ -5,18 +5,10 @@ import CustomText from '@/components/shared/CustomText';
 import { router } from 'expo-router';
 import { getMessaging, getToken, onMessage } from "@react-native-firebase/messaging";
 import { initializeApp, getApps } from '@react-native-firebase/app';
+import { firebaseConfig } from '@/service/config';
 
 // Configuración de Firebase (se inicializa una sola vez)
-const firebaseConfig = {
-  apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
-  authDomain: "rapidoapp-4a547.firebaseapp.com",
-  databaseURL: "https://rapidoapp-4a547-default-rtdb.firebaseio.com",
-  projectId: "rapidoapp-4a547",
-  storageBucket: "rapidoapp-4a547.firebasestorage.app",
-  messagingSenderId: "547406702474",
-  appId: "1:547406702474:web:d2a0f1ed1c6b2b3dca4a73",
-  measurementId: "G-MWJPFJMSLT"
-};
+
 
 if (!getApps().length) {
   initializeApp(firebaseConfig);
@@ -62,7 +54,7 @@ const Role = () => {
   const fetchToken = async () => {
     try {
       const token = await getToken(messaging, { vapidKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0" });
-      console.log("Firebase Messaging Token:", token);
+      console.log(token)
     } catch (error) {
       console.error("Error al obtener el token de Firebase Messaging:", error);
     }
