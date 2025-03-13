@@ -18,10 +18,10 @@ interface DecodedToken {
 
 
 const Main = () => {
-  messaging().setBackgroundMessageHandler(async remoteMessage => {
+  /*  messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.log('Message handled in the background!', remoteMessage);
   });
-
+*/
   const [loaded] = useFonts({
     Bold: require("../assets/fonts/NotoSans-Bold.ttf"),
     Regular: require("../assets/fonts/NotoSans-Regular.ttf"),
