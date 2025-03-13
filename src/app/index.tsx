@@ -8,7 +8,6 @@ import { resetAndNavigate } from '@/utils/Helpers'
 import {jwtDecode} from 'jwt-decode'
 import { tokenStorage } from '@/store/storage'
 import { refresh_tokens } from '@/service/apiInterceptors'
-import messaging from '@react-native-firebase/messaging';
 import { useUserStore } from '@/store/userStore'
 
 interface DecodedToken {

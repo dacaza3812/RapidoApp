@@ -3,7 +3,8 @@ import { View, Image, TouchableOpacity, PermissionsAndroid, Alert, Platform } fr
 import { roleStyles } from '@/styles/roleStyles';
 import CustomText from '@/components/shared/CustomText';
 import { router } from 'expo-router';
-import { getMessaging, getToken, onMessage } from "@react-native-firebase/messaging";
+import { getMessaging, getToken, onMessage, setBackgroundMessageHandler } from "@react-native-firebase/messaging";
+
 import { initializeApp, getApps } from '@react-native-firebase/app';
 import * as Notifications from "expo-notifications"
 
@@ -65,15 +66,18 @@ const Role = () => {
 
     // Suscribirse a onMessage para recibir notificaciones en primer plano
 
-    
+    /*
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Mensaje recibido:', payload.notification?.title);
       Alert.alert(payload.notification?.title || '', payload.notification?.body);
-      
     });
+*/
+    setBackgroundMessageHandler(messaging, async (payload) => {
+      console.log(payload)
+    })
 
     // Limpiar la suscripción al desmontar el componente
-    return () => unsubscribe();  
+   // return () => unsubscribe();  
   }, []);
 
   return (
