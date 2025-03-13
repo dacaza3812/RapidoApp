@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { getMessaging, getToken, onMessage } from "@react-native-firebase/messaging";
 import { initializeApp, getApps } from '@react-native-firebase/app';
 import { firebaseConfig } from '@/service/config';
-
+import * as Notifications from "expo-notifications";
 // Configuración de Firebase (se inicializa una sola vez)
 
 
@@ -16,7 +16,7 @@ if (!getApps().length) {
 const messaging = getMessaging();
 
 const Role = () => {
-
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
   const handleCustomerPress = () => {
     router.navigate("/customer/auth");
   };
@@ -29,21 +29,11 @@ const Role = () => {
   const requestNotificationPermission = async () => {
     if (Platform.OS === "android") {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-          {
-            title: 'Permiso de Notificaciones',
-            message: 'La aplicación necesita acceso a las notificaciones para enviarte actualizaciones.',
-            buttonNeutral: 'Preguntar luego',
-            buttonNegative: 'Cancelar',
-            buttonPositive: 'OK',
-          }
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log("Permiso de notificaciones concedido");
-        } else {
-          console.log("Permiso de notificaciones denegado");
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permiso no concedido', 'Necesitamos el permiso para enviar notificaciones');
         }
+        
       } catch (error) {
         console.error("Error al solicitar permiso de notificaciones:", error);
       }
@@ -64,18 +54,6 @@ const Role = () => {
     // Solicitar permiso de notificaciones y obtener token al montar el componente
     requestNotificationPermission();
     fetchToken();
-
-    // Suscribirse a onMessage para recibir notificaciones en primer plano
-
-    
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('Mensaje recibido:', payload.notification?.title);
-      Alert.alert(payload.notification?.title || '', payload.notification?.body);
-      
-    });
-
-    // Limpiar la suscripción al desmontar el componente
-    return () => unsubscribe();  
   }, []);
 
   return (
