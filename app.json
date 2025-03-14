@@ -62,8 +62,9 @@
       [
         "expo-notifications",
         {
-          "icon": "./src/assets/assets/images/icon.png",
-          "color": "#FF0000" 
+          "icon": "./auto.png",
+          "color": "#FF0000" ,
+          "defaultChannel": "default"
         }
       ]
     ],
