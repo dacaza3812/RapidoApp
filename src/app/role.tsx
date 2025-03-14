@@ -1,8 +1,23 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { View, Text, Image, TouchableOpacity, Platform, Alert } from 'react-native'
+import React, { useEffect } from 'react'
 import { roleStyles } from '@/styles/roleStyles'
 import CustomText from '@/components/shared/CustomText'
 import { router } from 'expo-router'
+import { getMessaging, getToken, onMessage, setBackgroundMessageHandler } from "@react-native-firebase/messaging";
+import { initializeApp, getApps } from '@react-native-firebase/app';
+import * as Notifications from "expo-notifications";
+
+export const firebaseConfig = {
+  apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
+  authDomain: "rapidoapp-4a547.firebaseapp.com",
+  databaseURL: "https://rapidoapp-4a547-default-rtdb.firebaseio.com",
+  projectId: "rapidoapp-4a547",
+  storageBucket: "rapidoapp-4a547.firebasestorage.app",
+  messagingSenderId: "547406702474",
+  appId: "1:547406702474:web:d2a0f1ed1c6b2b3dca4a73",
+  measurementId: "G-MWJPFJMSLT"
+};
+
 
 const Role = () => {
     const handleCustomerPress = () => {
@@ -12,6 +27,55 @@ const Role = () => {
     const handleCaptainPress = () => {
         router.navigate("/captain/auth")
     }
+
+    if (!getApps().length) {
+      initializeApp(firebaseConfig);
+    }
+    const messaging = getMessaging();
+    
+    const requestNotificationPermission = async () => {
+        if (Platform.OS === "android") {
+          try {
+            const { status } = await Notifications.requestPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permiso no concedido', 'Necesitamos el permiso para enviar notificaciones');
+            }
+          } catch (error) {
+            console.error("Error al solicitar permiso de notificaciones:", error);
+          }
+        }
+      };
+    
+    // Función para obtener el token de Firebase Messaging
+      const fetchToken = async () => {
+        try {
+          const token = await getToken(messaging, { vapidKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0" });
+          console.log("Firebase Messaging Token:", token);
+        } catch (error) {
+          console.error("Error al obtener el token de Firebase Messaging:", error);
+        }
+      };
+
+      useEffect(() => {
+        // Solicitar permiso de notificaciones y obtener token al montar el componente
+        requestNotificationPermission();
+        fetchToken();
+    
+        // Suscribirse a onMessage para recibir notificaciones en primer plano
+    
+        /*
+        const unsubscribe = onMessage(messaging, (payload) => {
+          console.log('Mensaje recibido:', payload.notification?.title);
+          Alert.alert(payload.notification?.title || '', payload.notification?.body);
+        });
+    */
+        setBackgroundMessageHandler(messaging, async (payload) => {
+          console.log(payload)
+        })
+    
+        // Limpiar la suscripción al desmontar el componente
+       // return () => unsubscribe();  
+      }, []);
 
   return (
     <View style={roleStyles.container}>
