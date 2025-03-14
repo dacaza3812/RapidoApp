@@ -11,7 +11,7 @@ import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
 import * as Notifications from "expo-notifications";
 import { getApps, initializeApp } from '@react-native-firebase/app'
-import { getMessaging, getToken } from '@react-native-firebase/messaging'
+import { getMessaging, getToken, setBackgroundMessageHandler } from '@react-native-firebase/messaging'
 
 export const firebaseConfig = {
     apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
@@ -68,11 +68,11 @@ const Auth = () => {
               console.log('Mensaje recibido:', payload.notification?.title);
               Alert.alert(payload.notification?.title || '', payload.notification?.body);
             });
-        
+        */
             setBackgroundMessageHandler(messaging, async (payload) => {
               console.log(payload)
             })
-        */
+        
             // Limpiar la suscripción al desmontar el componente
            // return () => unsubscribe();  
           }, []);
