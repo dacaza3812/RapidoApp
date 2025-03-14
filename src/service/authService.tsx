@@ -9,7 +9,7 @@ import { BASE_URL } from "./config"
 export const signin = async (payload: {
     role: "customer" | "captain",
     phone: string,
-    pushToken: string
+    firebasePushToken: string | null
 },
     updateAccessToken: () => void
 ) => {
