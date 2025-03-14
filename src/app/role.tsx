@@ -6,7 +6,7 @@ import { router } from 'expo-router'
 import { getMessaging, getToken, onMessage, setBackgroundMessageHandler } from "@react-native-firebase/messaging";
 import { initializeApp, getApps } from '@react-native-firebase/app';
 import * as Notifications from "expo-notifications";
-
+/*
 export const firebaseConfig = {
   apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
   authDomain: "rapidoapp-4a547.firebaseapp.com",
@@ -17,7 +17,7 @@ export const firebaseConfig = {
   appId: "1:547406702474:web:d2a0f1ed1c6b2b3dca4a73",
   measurementId: "G-MWJPFJMSLT"
 };
-
+*/
 
 const Role = () => {
     const handleCustomerPress = () => {
@@ -27,7 +27,7 @@ const Role = () => {
     const handleCaptainPress = () => {
         router.navigate("/captain/auth")
     }
-
+/*
     if (!getApps().length) {
       initializeApp(firebaseConfig);
     }
@@ -68,7 +68,7 @@ const Role = () => {
           console.log('Mensaje recibido:', payload.notification?.title);
           Alert.alert(payload.notification?.title || '', payload.notification?.body);
         });
-    */
+    
         setBackgroundMessageHandler(messaging, async (payload) => {
           console.log(payload)
         })
@@ -76,7 +76,7 @@ const Role = () => {
         // Limpiar la suscripción al desmontar el componente
        // return () => unsubscribe();  
       }, []);
-
+*/
   return (
     <View style={roleStyles.container}>
       <Image
