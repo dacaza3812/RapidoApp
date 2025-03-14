@@ -24,6 +24,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyD0o9J_DVjl6z8flmxGNTN9-DD9i112y8o"
