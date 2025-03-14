@@ -9,11 +9,13 @@ import PhoneInput from '@/components/shared/PhoneInput'
 import CustomButton from '@/components/shared/CustomButton'
 import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
+import useGetFirebaseToken from '@/service/useGetFirebaseToken'
 
 const Auth = () => {
     const {updateAccessToken} = useWS()
     const [phone, setPhone] = useState("")
     const [loading, setLoading] = useState(false)
+    const {firebasePushToken} = useGetFirebaseToken()
 
     const handleNext = async () => {
         try {
@@ -24,7 +26,8 @@ const Auth = () => {
             }
             await signin({
                 role: "customer",
-                phone
+                phone,
+                firebasePushToken
             }, updateAccessToken)
 
         } catch (error) {
