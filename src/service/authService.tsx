@@ -8,7 +8,8 @@ import { BASE_URL } from "./config"
 
 export const signin = async (payload: {
     role: "customer" | "captain",
-    phone: string
+    phone: string,
+    pushToken: string
 },
     updateAccessToken: () => void
 ) => {

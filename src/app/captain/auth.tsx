@@ -28,6 +28,7 @@ const Auth = () => {
     const {updateAccessToken} = useWS()
     const [phone, setPhone] = useState("")
     const [loading, setLoading] = useState(false)
+    const [token, setToken] = useState("")
 
     if (!getApps().length) {
         initializeApp(firebaseConfig);
@@ -49,8 +50,9 @@ const Auth = () => {
 
         const fetchToken = async () => {
             try {
-              const token = await getToken(messaging, { vapidKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0" });
-              console.log("Firebase Messaging Token:", token);
+              const toeknObtenido = await getToken(messaging, { vapidKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0" });
+              console.log("Firebase Messaging Token:", toeknObtenido);
+              setToken(toeknObtenido)
             } catch (error) {
               console.error("Error al obtener el token de Firebase Messaging:", error);
             }
@@ -90,7 +92,8 @@ const Auth = () => {
             // Llamada asíncrona con await
             await signin({
                 role: "captain",
-                phone
+                phone,
+                pushToken: token
             }, updateAccessToken)
 
         } catch (error) {
