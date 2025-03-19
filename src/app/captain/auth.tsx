@@ -52,7 +52,7 @@ const Auth = () => {
         <ScrollView contentContainerStyle={authStyles.container}>
 
             <View style={commonStyles.flexRowBetween}>
-                <Image source={require("@/assets/images/captain_logo.png")} style={authStyles.logo}/>
+                <Image source={require("@/assets/images/logo_t.png")} style={authStyles.logo}/>
 
                 <TouchableOpacity style={authStyles.flexRowGap}>
                     <MaterialIcons name='help' size={18} color="grey"/>
