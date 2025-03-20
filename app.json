@@ -50,6 +50,13 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiZGFjYXphIiwiYSI6ImNtOGdvdHRxMzBxbWkya3B3bGxoZHk1MnkifQ.HIuCzXQQeAPcUtg7_2aMHg",
+          "RNMapboxMapsVersion": "11.0.0"
+        }
+      ],
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       [
