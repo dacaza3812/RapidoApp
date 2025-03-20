@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useEffect, useState } from 'react';
 import { View, Image, TouchableOpacity, PermissionsAndroid, Alert, Platform } from 'react-native';
 import { roleStyles } from '@/styles/roleStyles';
@@ -16,14 +15,6 @@ if (!getApps().length) {
 }
 const messaging = getMessaging();
 
-=======
-import { View, PermissionsAndroid, Image, TouchableOpacity } from 'react-native'
-import React, { useEffect } from 'react'
-import { roleStyles } from '@/styles/roleStyles'
-import CustomText from '@/components/shared/CustomText'
-import { router } from 'expo-router'
-import messaging from "@react-native-firebase/messaging"
->>>>>>> 4f16ab7 (probando con firebase)
 const Role = () => {
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
   const handleCustomerPress = () => {
@@ -47,7 +38,6 @@ const Role = () => {
         console.error("Error al solicitar permiso de notificaciones:", error);
       }
     }
-<<<<<<< HEAD
   };
 
   // Función para obtener el token de Firebase Messaging
@@ -65,27 +55,6 @@ const Role = () => {
     requestNotificationPermission();
     fetchToken();
   }, []);
-=======
-    async function requestUserPermision(){
-      const authStatus = await messaging().requestPermission();
-      const enabled = authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-    
-      if(enabled){
-        console.log("Auth Status ", authStatus);
-      }
-    }
-PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-
-const getToken = async () => {
-  const token = await messaging().getToken()
-  console.log(token);
-}
-
-useEffect(() => {
-  requestUserPermision();
-  getToken()
-}, [])
->>>>>>> 4f16ab7 (probando con firebase)
 
   return (
     <View style={roleStyles.container}>
