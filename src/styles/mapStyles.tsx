@@ -7,7 +7,7 @@ export const mapStyles = StyleSheet.create({
     },
     gpsButton: {
         position: 'absolute',
-        bottom: 10,
+        bottom: 35,
         right: 10,
         padding: 5,
         borderRadius: 100,
