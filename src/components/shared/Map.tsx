@@ -40,8 +40,9 @@ const Map: FC<{ height: number }> = ({ height }) => {
       try {
         const currentLocation = await Location.getCurrentPositionAsync({});
         const { latitude, longitude } = currentLocation.coords;
-        
+        handleGpsButtonPress();
         // Aquí podrías centrar la cámara si lo requieres
+        
       } catch (error) {
         console.log('Error getting current location');
       }
@@ -54,9 +55,7 @@ const Map: FC<{ height: number }> = ({ height }) => {
     askLocationAccess();
   }, [mapRef, isFocused]);
 
-  useEffect(() => {
-    handleGpsButtonPress();
-  }, [])
+  
 
   useEffect(() => {
     if (location?.latitude && location?.longitude) {
@@ -93,7 +92,7 @@ const Map: FC<{ height: number }> = ({ height }) => {
         cameraRef.current?.setCamera({
           centerCoordinate: [longitude, latitude],
           zoomLevel: 16,
-          animationDuration: 1000,
+          animationDuration: 200,
           animationMode: "flyTo"
         })
         const address = await reverseGeocode(latitude, longitude);
@@ -148,6 +147,10 @@ const markerCab = cabAll.map((marker: { longitude: number; latitude: number; }) 
   point([marker.longitude, marker.latitude], marker)
 );
 
+const handleOnDidFinishLoadingMap = async () => {
+  await handleGpsButtonPress()
+}
+
   return (
     <View style={{ height: height, width: '100%' }}>
     <Mapbox.MapView
@@ -156,6 +159,7 @@ const markerCab = cabAll.map((marker: { longitude: number; latitude: number; }) 
       ref={mapRef}
       styleURL="mapbox://styles/mapbox/dark-v11"
       style={{ flex: 1 }}
+      onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
     >
       {/* Declaramos las imágenes una única vez */}
       <Images images={{ bike, auto, cab }} />
