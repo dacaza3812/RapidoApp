@@ -1,7 +1,7 @@
 import {Platform} from 'react-native'
 
-export const BASE_URL = "http://192.168.1.103:3000"
+export const BASE_URL = "https://server-react-native-app.onrender.com"
 
 
-export const SOCKET_URL = "ws://192.168.1.103:3000"
+export const SOCKET_URL = "wss://server-react-native-app.onrender.com"
 
