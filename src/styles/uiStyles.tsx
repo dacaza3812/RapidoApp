@@ -6,7 +6,6 @@ export const uiStyles = StyleSheet.create({
     absoluteTop: {
         zIndex: 1,
         position: "absolute",
-        top: 25
     },
     container: {
         flexDirection: 'row',

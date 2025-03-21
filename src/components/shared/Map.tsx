@@ -151,6 +151,8 @@ const markerCab = cabAll.map((marker: { longitude: number; latitude: number; }) 
   return (
     <View style={{ height: height, width: '100%' }}>
     <Mapbox.MapView
+      scaleBarEnabled={false}
+      logoEnabled={false}
       ref={mapRef}
       styleURL="mapbox://styles/mapbox/dark-v11"
       style={{ flex: 1 }}
