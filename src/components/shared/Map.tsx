@@ -1,4 +1,4 @@
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Alert } from 'react-native';
 import React, { FC, memo, useEffect, useRef, useState } from 'react';
 import Mapbox, {
   Camera,
@@ -20,6 +20,7 @@ import { useWS } from '@/service/WSProvider';
 import bike from '@/assets/icons/bike_marker.png';
 import auto from '@/assets/icons/auto_marker.png';
 import cab from '@/assets/icons/cab_marker.png';
+
 
 const accesToken =
   'pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A';
@@ -51,8 +52,11 @@ const Map: FC<{ height: number }> = ({ height }) => {
 
   useEffect(() => {
     askLocationAccess();
-    handleGpsButtonPress();
   }, [mapRef, isFocused]);
+
+  useEffect(() => {
+    handleGpsButtonPress();
+  }, [])
 
   useEffect(() => {
     if (location?.latitude && location?.longitude) {
@@ -78,6 +82,8 @@ const Map: FC<{ height: number }> = ({ height }) => {
     }
   }, [location, emit, on, off]);
 
+
+
   const handleGpsButtonPress = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -87,8 +93,9 @@ const Map: FC<{ height: number }> = ({ height }) => {
         cameraRef.current?.setCamera({
           centerCoordinate: [longitude, latitude],
           zoomLevel: 16,
-          animationDuration: 1000
-        });
+          animationDuration: 1000,
+          animationMode: "flyTo"
+        })
         const address = await reverseGeocode(latitude, longitude);
         setLocation({
           latitude,
@@ -101,87 +108,114 @@ const Map: FC<{ height: number }> = ({ height }) => {
     }
   };
 
-  // Separamos los marcadores según el tipo
-  const bikeAll = markers.filter((marker: { type: string }) => marker.type === 'bike');
-  const markerBike = bikeAll.map((marker: { longitude: number; latitude: number }) =>
-    point([marker.longitude, marker.latitude], { marker })
-  );
+  const generateRandomMarkers = () => {
+    if(!location?.latitude || !location?.longitude || outOfRange) return;
 
-  const autoAll = markers.filter((marker: { type: string }) => marker.type === 'auto');
-  const markerAuto = autoAll.map((marker: { longitude: number; latitude: number }) =>
-    point([marker.longitude, marker.latitude], { marker })
-  );
+    const types = ["bike", "auto", "cab"]
+    const newMarkers = Array.from({length: 20}, (_, index) => {
+      const randomType = types[Math.floor(Math.random() * types.length)]
+      const randomRotation = Math.floor(Math.random() * 360)
+      
+      return {
+        id: index,
+        latitude: location?.latitude + (Math.random() - 0.5) * 0.01,
+        longitude: location?.longitude + (Math.random() - 0.5) * 0.01,
+        type: randomType,
+        rotation: randomRotation,
+        visible: true,
+      }
+    });
+    setMarkers(newMarkers)
+  }
+/*
+  useEffect(() => {
+    generateRandomMarkers();
+  }, [location])
+*/
+  const bikeAll = markers.filter((marker: { type: string; }) => marker.type === 'bike');
+const markerBike = bikeAll.map((marker: { longitude: number; latitude: number; }) =>
+  // Se asignan las propiedades directamente (sin anidarlas en "marker")
+  point([marker.longitude, marker.latitude], marker)
+);
 
-  const cabAll = markers.filter((marker: { type: string }) => marker.type === 'cab');
-  const markerCab = cabAll.map((marker: { longitude: number; latitude: number }) =>
-    point([marker.longitude, marker.latitude], { marker })
-  );
+const autoAll = markers.filter((marker: { type: string; }) => marker.type === 'auto');
+const markerAuto = autoAll.map((marker: { longitude: number; latitude: number; }) =>
+  point([marker.longitude, marker.latitude], marker)
+);
+
+const cabAll = markers.filter((marker: { type: string; }) => marker.type === 'cab');
+const markerCab = cabAll.map((marker: { longitude: number; latitude: number; }) =>
+  point([marker.longitude, marker.latitude], marker)
+);
 
   return (
     <View style={{ height: height, width: '100%' }}>
-      <Mapbox.MapView
-        ref={mapRef}
-        styleURL="mapbox://styles/mapbox/dark-v11"
-        style={{ flex: 1 }}
-      >
-        {/* Declaramos las imágenes una única vez */}
-        <Images images={{ bike, auto, cab }} />
+    <Mapbox.MapView
+      ref={mapRef}
+      styleURL="mapbox://styles/mapbox/dark-v11"
+      style={{ flex: 1 }}
+    >
+      {/* Declaramos las imágenes una única vez */}
+      <Images images={{ bike, auto, cab }} />
 
-        <Camera ref={cameraRef} followUserLocation followZoomLevel={16} />
-        <LocationPuck
-          puckBearingEnabled
-          puckBearing="heading"
-          pulsing={{ isEnabled: true }}
-        />
+      <Camera ref={cameraRef} followZoomLevel={16} followUserLocation={!!location?.latitude ? false : true}/>
+      <LocationPuck
+        puckBearingEnabled
+        puckBearing="heading"
+        pulsing={{ isEnabled: true }}
+      />
 
-        {/* Capa para cada tipo de marcador */}
-        {markerBike.length > 0 && (
-          <ShapeSource id="captains-bike" shape={featureCollection(markerBike)}>
-            <SymbolLayer
-              id="captains-icons-bike"
-              style={{
-                iconImage: 'bike',
-                iconAllowOverlap: true,
-                iconSize: 0.25,
-                iconAnchor: 'bottom'
-              }}
-            />
-          </ShapeSource>
-        )}
+      {/* Capa para cada tipo de marcador */}
+      {markerBike.length > 0 && (
+        <ShapeSource id="captains-bike" shape={featureCollection(markerBike)}>
+          <SymbolLayer
+            id="captains-icons-bike"
+            style={{
+              iconImage: 'bike',
+              iconAllowOverlap: true,
+              iconSize: 0.25,
+              iconAnchor: 'bottom',
+              iconRotate: ['get', 'rotation']
+            }}
+          />
+        </ShapeSource>
+      )}
 
-        {markerAuto.length > 0 && (
-          <ShapeSource id="captains-auto" shape={featureCollection(markerAuto)}>
-            <SymbolLayer
-              id="captains-icons-auto"
-              style={{
-                iconImage: 'auto',
-                iconAllowOverlap: true,
-                iconSize: 0.25,
-                iconAnchor: 'bottom'
-              }}
-            />
-          </ShapeSource>
-        )}
+      {markerAuto.length > 0 && (
+        <ShapeSource id="captains-auto" shape={featureCollection(markerAuto)}>
+          <SymbolLayer
+            id="captains-icons-auto"
+            style={{
+              iconImage: 'auto',
+              iconAllowOverlap: true,
+              iconSize: 0.25,
+              iconAnchor: 'bottom',
+              iconRotate: ['get', 'rotation']
+            }}
+          />
+        </ShapeSource>
+      )}
 
-        {markerCab.length > 0 && (
-          <ShapeSource id="captains-cab" shape={featureCollection(markerCab)}>
-            <SymbolLayer
-              id="captains-icons-cab"
-              style={{
-                iconImage: 'cab',
-                iconAllowOverlap: true,
-                iconSize: 0.25,
-                iconAnchor: 'bottom'
-              }}
-            />
-          </ShapeSource>
-        )}
-      </Mapbox.MapView>
+      {markerCab.length > 0 && (
+        <ShapeSource id="captains-cab" shape={featureCollection(markerCab)}>
+          <SymbolLayer
+            id="captains-icons-cab"
+            style={{
+              iconImage: 'cab',
+              iconAllowOverlap: true,
+              iconSize: 0.25,
+              iconAnchor: 'bottom',
+              iconRotate: ['get', 'rotation']
+            }}
+          />
+        </ShapeSource>
+      )}
+    </Mapbox.MapView>
 
-      <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
-        <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
+      <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
+    </TouchableOpacity>
+  </View>
   );
 };
 
