@@ -20,7 +20,7 @@ const DraggableMap: FC<{height: number}> = ({height}) => {
     const isFocused = useIsFocused()
     const [markers, setMarkers] = useState<any>([])
     const {emit, on, off} = useWS()
-
+    
     const MAX_DISTANCE_THRESHOLD = 10000;
     const {setLocation, location, outOfRange, SetOutOfRange} = useUserStore()
 

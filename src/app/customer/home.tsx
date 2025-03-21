@@ -8,6 +8,7 @@ import { screenHeight } from '@/utils/Constants'
 import  BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet"
 import SheetContent from '@/components/customer/SheetContent'
 import { getMyRides } from '@/service/rideService'
+import Map from '@/components/shared/Map'
 
 const androidHeights = [screenHeight * 0.12, screenHeight * 0.42,]
 const ioseights = [screenHeight * 0.2, screenHeight *0.5,]
@@ -38,7 +39,8 @@ const Home = () => {
         translucent={false}
       />
       <LocationBar />
-      <DraggableMap height={mapHeight}/>
+       {/* <DraggableMap height={mapHeight}/> */}
+      <Map height={mapHeight}/>
 
       <BottomSheet
         ref={bottomSheetRef}
