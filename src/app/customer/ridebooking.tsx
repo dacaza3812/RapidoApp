@@ -35,10 +35,10 @@ const RideBooking = () => {
 
   // Definición de velocidades promedio (en km/h) para cada medio de transporte
   const averageSpeeds: Record<string, number> = {
-    "Motocicleta": 40,
-    "Triciclo": 30,
+    "Motocicleta": 30,
+    "Triciclo": 20,
     "Auto Económico": 35,
-    "Auto Premium": 45,
+    "Auto Premium": 25,
   };
 
   // Opciones base de viaje sin ETA
