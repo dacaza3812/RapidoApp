@@ -3,13 +3,15 @@ import React, { useState } from 'react'
 import { authStyles } from '@/styles/authStyles'
 import { ScrollView } from 'react-native-gesture-handler'
 import { commonStyles } from '@/styles/commonStyles'
-import MaterialIcons from "@expo/vector-icons/MaterialIcons"
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import CustomText from '@/components/shared/CustomText'
 import PhoneInput from '@/components/shared/PhoneInput'
 import CustomButton from '@/components/shared/CustomButton'
 import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
 import useGetFirebaseToken from '@/service/useGetFirebaseToken'
+import * as Linking from 'expo-linking';
+
 
 const Auth = () => {
     const {updateAccessToken} = useWS()
@@ -47,9 +49,9 @@ const Auth = () => {
             <View style={commonStyles.flexRowBetween}>
                 <Image source={require("@/assets/images/logo_t.png")} style={authStyles.logo}/>
 
-                <TouchableOpacity style={authStyles.flexRowGap}>
-                    <MaterialIcons name='help' size={18} color="grey"/>
-                    <CustomText fontFamily='Medium' variant='h7'>Ayuda</CustomText>
+                <TouchableOpacity style={authStyles.flexRowGap} onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}  activeOpacity={0.7}>
+                    <MaterialIcons name="telegram" size={24}  style={{color: "#ffc920"}}/>
+                    <CustomText fontFamily='Medium' variant='h7'>Soporte</CustomText>
                 </TouchableOpacity>
             </View>
 

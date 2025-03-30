@@ -10,7 +10,7 @@ import CustomButton from '@/components/shared/CustomButton'
 import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
 import useGetFirebaseToken from '@/service/useGetFirebaseToken'
-
+import * as Linking from 'expo-linking';
 
 const Auth = () => {
     const {updateAccessToken} = useWS()
@@ -54,9 +54,9 @@ const Auth = () => {
             <View style={commonStyles.flexRowBetween}>
                 <Image source={require("@/assets/images/captain_logo.png")} style={authStyles.logo}/>
 
-                <TouchableOpacity style={authStyles.flexRowGap}>
-                    <MaterialIcons name='help' size={18} color="grey"/>
-                    <CustomText fontFamily='Medium' variant='h7'>Ayuda</CustomText>
+                <TouchableOpacity style={authStyles.flexRowGap} onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}  activeOpacity={0.7}>
+                    <MaterialIcons name="telegram" size={24}  style={{color: "#ffc920"}}/>
+                    <CustomText fontFamily='Medium' variant='h7'>Soporte</CustomText>
                 </TouchableOpacity>
             </View>
 
