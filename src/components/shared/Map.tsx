@@ -157,7 +157,6 @@ const handleOnDidFinishLoadingMap = async () => {
       scaleBarEnabled={false}
       logoEnabled={false}
       ref={mapRef}
-      styleURL="mapbox://styles/mapbox/dark-v11"
       style={{ flex: 1 }}
       onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
     >
