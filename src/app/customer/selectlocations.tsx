@@ -16,7 +16,7 @@ import { locationStyles } from '@/styles/locationStyles'
 import { useUserStore } from '@/store/userStore'
 import LocationItem from '@/components/customer/LocationItem'
 import LocationInput from '@/components/customer/LocationInput'
-//import MapPickerModal from '@/components/customer/MapPickerModal'
+// import MapPickerModal from '@/components/customer/MapPickerModal'
 import MapPickerModal from "@/components/customer/MapPickerModalMapbox"
 
 
