@@ -36,6 +36,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
   const [locations, setLocations] = useState([]);
   const textInputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState("");
+  const [followUser, setFollowUser] = useState(false); // Add state to control follow behavior
 
   const fetchLocation = async (query: string) => {
     if (query?.length > 4) {
@@ -48,6 +49,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
   };
 
   useEffect(() => {
+    const loadInitialLocation = async () => {
     if (selectedLocation?.latitude) {
       setAddress(selectedLocation.address);
       setRegion({
@@ -59,16 +61,31 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
         zoomLevel: 16,
         animationDuration: 1000,
       });
+    }else {
+      try {
+        const loc = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = loc.coords;
+        setRegion({ latitude, longitude });
+        setFollowUser(true); // Activar follow para que la cámara siga al usuario
+        cameraRef.current?.setCamera({
+          centerCoordinate: [longitude, latitude],
+          zoomLevel: 16,
+          animationDuration: 1000,
+        });
+      } catch (error) {
+        console.log("Error al obtener ubicación inicial:", error);
+      }
     }
-  }, [selectedLocation]);
+  }
+  loadInitialLocation();
+
+  }, [selectedLocation]); // Este efecto ya inicializa la cámara correctamente
 
   const addLocation = async (place_id: string, description: string) => {
     const data = await getLatLong(place_id, description);
     if (data) {
-      setRegion({
-        latitude: data.latitude,
-        longitude: data.longitude,
-      });
+      setFollowUser(false); // Desactivar seguimiento
+      setRegion(data); // Actualizar región con los datos correctos
       setAddress(data.address);
       cameraRef.current?.setCamera({
         centerCoordinate: [data.longitude, data.latitude],
@@ -104,6 +121,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
     try {
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
+      setFollowUser(true); // Enable follow mode
       cameraRef.current?.setCamera({
         centerCoordinate: [longitude, latitude],
         zoomLevel: 16,
@@ -111,28 +129,13 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
       });
       const addr = await reverseGeocode(latitude, longitude);
       setAddress(addr);
-      setRegion({
-        latitude,
-        longitude,
-      });
+      setRegion({ latitude, longitude });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleOnDidFinishLoadingMap = async () => {
-    await handleGpsButtonPress()
-  }
 
- 
-
-  const test = async () => {
-    const loc = await Location.getCurrentPositionAsync({});
-    const { latitude, longitude } = loc.coords;
-    cameraRef.current?.setCamera({
-        centerCoordinate: [longitude, latitude]
-    })
-  }
 
 
   return (
@@ -152,7 +155,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
         </TouchableOpacity>
 
         <View style={modalStyles.searchContainer}>
-          <Ionicons name='search-outline' size={RFValue(16)} color="#777" />
+          { /*<Ionicons name='search-outline' size={RFValue(16)} color="#777" />
           <TextInput
             ref={textInputRef}
             style={modalStyles.input}
@@ -163,7 +166,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
               setText(e);
               fetchLocation(e);
             }}
-          />
+          /> */}
         </View>
 
         {text !== "" ? (
@@ -186,21 +189,24 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
         ) : (
           <>
             <View style={{ flex: 1, width: "100%" }}>
-              <Mapbox.MapView
-                ref={mapRef}
-                style={{ flex: 1 }}
-                styleURL="mapbox://styles/mapbox/dark-v11"
-                onRegionDidChange={handleRegionDidChange}
-                onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
-                logoEnabled={false}
-                scaleBarEnabled={false}
-                onWillStartRenderingMap={test}
-              >
-                
-             <Camera ref={cameraRef} followUserLocation followZoomLevel={16} animationDuration={100}/>
-             
-                
-              </Mapbox.MapView>
+            <Mapbox.MapView
+  ref={mapRef}
+  style={{ flex: 1 }}
+  onRegionDidChange={handleRegionDidChange}
+  logoEnabled={false}
+  scaleBarEnabled={false}
+>
+  <Camera
+    ref={cameraRef}
+    followUserLocation={followUser}
+    followZoomLevel={16}
+    animationDuration={100}
+    defaultSettings={{
+      centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
+      zoomLevel: 16
+    }}
+  />
+</Mapbox.MapView>
               <View style={mapStyles.centerMarkerContainer}>
                 <Image
                   source={title === "drop" ? require("@/assets/icons/drop_marker.png") : require("@/assets/icons/marker.png")}
