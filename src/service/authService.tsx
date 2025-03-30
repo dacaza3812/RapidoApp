@@ -33,7 +33,7 @@ export const signin = async (payload: {
         }
         updateAccessToken()
     } catch (error: any) {
-        Alert.alert("Oh! Hubo un error");
+        Alert.alert("Error: ", error?.response?.data?.msg || "Error al iniciar sesión");
         console.log("Error: ", error?.response?.data?.msg || "Error al iniciar sesión")
     }
 }
