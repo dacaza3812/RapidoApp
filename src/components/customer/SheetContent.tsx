@@ -50,9 +50,9 @@ const SheetContent = () => {
           }
       </View>
 
-      <View style={uiStyles.adSection}>
+      {/* <View style={uiStyles.adSection}>
           <Image source={require("@/assets/images/ad_banner.jpg")} style={uiStyles.adImage}/>
-      </View>
+      </View> */}
 
       <View style={uiStyles.bannerContainer}>
         <Image source={require("@/assets/icons/banner.gif")} style={uiStyles.banner} resizeMode="contain" resizeMethod="resize"/>
