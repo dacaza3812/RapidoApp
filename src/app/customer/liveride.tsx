@@ -50,7 +50,7 @@ const LiveRide = () => {
 
     on("rideCanceled", (error) => {
       resetAndNavigate("/customer/home")
-      Alert.alert("viaje Cancelado")
+      Alert.alert("Viaje Cancelado", "Usted será redirigido a la pantalla de inicio")
     })
 
     on("error", (error) => {
