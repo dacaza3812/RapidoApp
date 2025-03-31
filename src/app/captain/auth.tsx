@@ -55,7 +55,7 @@ const Auth = () => {
                 <Image source={require("@/assets/images/captain_logo.png")} style={authStyles.logo}/>
 
                 <TouchableOpacity style={authStyles.flexRowGap} onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}  activeOpacity={0.7}>
-                    <MaterialIcons name="telegram" size={24}  style={{color: "#ffc920"}}/>
+                    <MaterialIcons name="telegram" size={24}  style={{color: "#24A1DE"}}/>
                     <CustomText fontFamily='Medium' variant='h7'>Soporte</CustomText>
                 </TouchableOpacity>
             </View>
