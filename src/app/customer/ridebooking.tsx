@@ -191,7 +191,7 @@ const RideOption = React.memo(({ ride, selected, onSelect }: any) => (
           {ride?.type} {ride?.isFastest && <Text style={rideStyles.fastestLabel}>SUPER RÁPIDO</Text>}
         </CustomText>
         <CustomText fontSize={10}>
-          {ride?.seats} asientos » llegada: {ride?.time} » Recogida: {ride?.dropTime}
+          {ride?.seats} asientos » llegada: {ride?.time} {/* » Recogida: {ride?.dropTime} */}
         </CustomText>
       </View>
       <View style={rideStyles.priceContainer}>
