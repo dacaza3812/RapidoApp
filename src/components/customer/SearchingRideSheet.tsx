@@ -33,7 +33,7 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
         )}
         <View>
           <CustomText fontSize={10}>Buscando para ti</CustomText>
-          <CustomText fontFamily='Medium' fontSize={12}>viaje en {item?.vehicle === "bike" ? "Motocicleta" : item?.vehicle === "auto" ? "Triciclo" : item?.vehicle === "cabEconomy" ? "Auto Económico" : item?.vehicle === "cabPremium" ? "Auto Premium" : item?.vehicle}</CustomText>
+          <CustomText fontFamily='Medium' fontSize={12}>Viaje en {item?.vehicle === "bike" ? "Motocicleta" : item?.vehicle === "auto" ? "Triciclo" : item?.vehicle === "cabEconomy" ? "Auto Económico" : item?.vehicle === "cabPremium" ? "Auto Premium" : item?.vehicle}</CustomText>
         </View>
         </View>
 
