@@ -50,34 +50,34 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
 
   useEffect(() => {
     const loadInitialLocation = async () => {
-    if (selectedLocation?.latitude) {
-      setAddress(selectedLocation.address);
-      setRegion({
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude,
-      });
-      cameraRef.current?.setCamera({
-        centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
-        zoomLevel: 16,
-        animationDuration: 1000,
-      });
-    }else {
-      try {
-        const loc = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = loc.coords;
-        setRegion({ latitude, longitude });
-        setFollowUser(true); // Activar follow para que la cámara siga al usuario
+      if (selectedLocation?.latitude) {
+        setAddress(selectedLocation.address);
+        setRegion({
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+        });
         cameraRef.current?.setCamera({
-          centerCoordinate: [longitude, latitude],
+          centerCoordinate: [selectedLocation.longitude, selectedLocation.latitude],
           zoomLevel: 16,
           animationDuration: 1000,
         });
-      } catch (error) {
-        console.log("Error al obtener ubicación inicial:", error);
+      } else {
+        try {
+          const loc = await Location.getCurrentPositionAsync({});
+          const { latitude, longitude } = loc.coords;
+          setRegion({ latitude, longitude });
+          setFollowUser(true); // Activar follow para que la cámara siga al usuario
+          cameraRef.current?.setCamera({
+            centerCoordinate: [longitude, latitude],
+            zoomLevel: 16,
+            animationDuration: 1000,
+          });
+        } catch (error) {
+          console.log("Error al obtener ubicación inicial:", error);
+        }
       }
     }
-  }
-  loadInitialLocation();
+    loadInitialLocation();
 
   }, [selectedLocation]); // Este efecto ya inicializa la cámara correctamente
 
@@ -189,24 +189,25 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
         ) : (
           <>
             <View style={{ flex: 1, width: "100%" }}>
-            <Mapbox.MapView
-  ref={mapRef}
-  style={{ flex: 1 }}
-  onRegionDidChange={handleRegionDidChange}
-  logoEnabled={false}
-  scaleBarEnabled={false}
->
-  <Camera
-    ref={cameraRef}
-    followUserLocation={followUser}
-    followZoomLevel={16}
-    animationDuration={100}
-    defaultSettings={{
-      centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
-      zoomLevel: 16
-    }}
-  />
-</Mapbox.MapView>
+              <Mapbox.MapView
+                ref={mapRef}
+                style={{ flex: 1 }}
+                onRegionDidChange={handleRegionDidChange}
+                logoEnabled={false}
+                scaleBarEnabled={false}
+                onDidFinishLoadingMap={handleGpsButtonPress}
+              >
+                <Camera
+                  ref={cameraRef}
+                  followUserLocation={followUser}
+                  followZoomLevel={16}
+                  animationDuration={100}
+                  defaultSettings={{
+                    centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
+                    zoomLevel: 16
+                  }}
+                />
+              </Mapbox.MapView>
               <View style={mapStyles.centerMarkerContainer}>
                 <Image
                   source={title === "drop" ? require("@/assets/icons/drop_marker.png") : require("@/assets/icons/marker.png")}
