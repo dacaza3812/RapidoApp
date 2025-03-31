@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rapido",
     "slug": "rapido",
-    "version": "1.0.2",
+    "version": "0.0.2",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "rapido",
