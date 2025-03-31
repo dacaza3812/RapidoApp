@@ -49,7 +49,7 @@ const Main = () => {
 
       const isUpdateRequired = (latestVersion !== currentVersion);
       if (isUpdateRequired) {
-        setDownloadUrl("http://www.apklis.cu");
+        setDownloadUrl("https://www.apklis.cu/application/com.dacaza.rapido");
         setUpdateRequired(true);
       }
       return isUpdateRequired;
