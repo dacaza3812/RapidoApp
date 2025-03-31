@@ -33,3 +33,16 @@ export interface calculateDistance {
     lon1: lon1
     lon2: lon2
 }
+
+export interface Version {
+    message: string;
+    version: VersionClass;
+}
+
+export interface VersionClass {
+    _id:       string;
+    version:   string;
+    createdAt: Date;
+    updatedAt: Date;
+    __v:       number;
+}
