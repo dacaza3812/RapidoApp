@@ -68,7 +68,7 @@ const CaptainHeader = () => {
             </View>
         </View>
 
-        <View style={captainStyles?.earningContainer}>
+        { /* <View style={captainStyles?.earningContainer}>
             <CustomText fontSize={13} style={{color: "#fff"}} fontFamily='Medium'>
                 Ganado hoy
             </CustomText>
@@ -79,7 +79,7 @@ const CaptainHeader = () => {
                 </CustomText>
                 <MaterialIcons name='arrow-drop-down' size={24} color="#fff"/>
             </View>
-        </View>
+        </View> */}
     </>
   )
 }
