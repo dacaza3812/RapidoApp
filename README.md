@@ -133,3 +133,10 @@ FA:C2:34:61:2C:59:9E:0F:08:72:17:6A:CA:D1:1E:66:1B:D5:64:15
     https://docs.mapbox.com/api/search/geocoding/
 
     todo funciona bien
+
+
+    testing:
+  # https://callstack.github.io/react-native-testing-library/docs/api/render
+  # https://jestjs.io/es-ES/docs/getting-started
+  # https://docs.maestro.dev/
+  # https://docs.expo.dev/build-reference/e2e-tests/
