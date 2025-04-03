@@ -124,7 +124,7 @@ const CaptainLiveRide = () => {
           }
           const isSucces = await updateRideStatus(rideData?._id, "COMPLETED")
           if(isSucces){
-            Alert.alert("COngratulations, you rock")
+            Alert.alert("Viaje Completado", "Ahora estás activo a otros usuarios")
             resetAndNavigate("/captain/home")
           }else {
             Alert.alert("ubo un error")
