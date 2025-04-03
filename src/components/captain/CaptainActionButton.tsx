@@ -7,6 +7,7 @@ import CustomText from '../shared/CustomText';
 import { orderStyles } from '@/styles/captainStyles';
 import SwipeButton from "rn-swipe-button"
 import { RFValue } from 'react-native-responsive-fontsize';
+import { Link } from 'expo-router';
 
 const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress: () => void}> = ({onPress,ride,title,color}) => {
 
@@ -21,7 +22,9 @@ const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress
                 Conoce al Cliente
             </CustomText>
             <CustomText fontSize={11} style={{marginTop: 10, marginBottom: 3}} numberOfLines={1} fontFamily='Medium'>
+                <Link style={{textDecorationLine: "underline"}} href={`tel:${ride?.customer?.phone}`}>
                 +53 {ride?.customer?.phone && ride?.customer?.phone?.slice(0, 5) + " " + ride?.customer?.phone?.slice(5)}
+                </Link>
             </CustomText>
         </View>
 
@@ -34,7 +37,7 @@ const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress
                 </View>
                 <View style={orderStyles.infoText}>
                     <CustomText fontFamily='SemiBold' fontSize={11} numberOfLines={1}>
-                        {ride?.pickup?.address?.slice(0, 10)}
+                        Recoger al cliente en: 
                     </CustomText>
                     <CustomText fontFamily='Medium' fontSize={9.5} numberOfLines={2} style={orderStyles.label}>
                         {ride?.pickup?.address}
@@ -49,7 +52,7 @@ const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress
                 </View>
                 <View style={orderStyles.infoText}>
                     <CustomText fontFamily='SemiBold' fontSize={11} numberOfLines={1}>
-                        {ride?.drop?.address?.slice(0, 10)}
+                        Dejar al cliente en:
                     </CustomText>
                     <CustomText fontFamily='Medium' fontSize={9.5} numberOfLines={2} style={orderStyles.label}>
                         {ride?.drop?.address}
