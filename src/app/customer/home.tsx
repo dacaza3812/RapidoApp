@@ -35,7 +35,7 @@ const Home = () => {
     <View style={homeStyles.container}>
       <StatusBar
         style='auto'
-        backgroundColor='orange'
+        backgroundColor='#176fb0'
         translucent={false}
       />
       <LocationBar />

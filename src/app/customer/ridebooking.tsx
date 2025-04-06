@@ -124,7 +124,7 @@ const RideBooking = () => {
 
   return (
     <View style={rideStyles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="orange" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#176fb0" translucent={false} />
       {item?.drop_latitude && location?.latitude && (
         <RoutesMap
           drop={{ latitude: parseFloat(item?.drop_latitude), longitude: parseFloat(item?.drop_longitude) }}

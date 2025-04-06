@@ -81,7 +81,12 @@ const Role = () => {
     <View style={roleStyles.container}>
       <Image
         source={require("@/assets/images/logo_t.png")}
-        style={roleStyles.logo}
+        style={{
+          resizeMode: 'contain',
+          height: 100,
+          marginTop: 50,
+          marginBottom: 50
+      }}
       />
       <CustomText fontFamily='Medium' variant='h6'>
         Elija su tipo de usuario

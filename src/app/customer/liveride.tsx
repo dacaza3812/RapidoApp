@@ -85,7 +85,7 @@ const LiveRide = () => {
     <View style={rideStyles.container}>
       <StatusBar
         barStyle="default"
-        backgroundColor="orange"
+        backgroundColor="#176fb0"
         translucent={false}
       />
       {

@@ -49,9 +49,9 @@ const CaptainHeader = () => {
             <SafeAreaView />
 
             <View style={commonStyles.flexRowBetween}>
-                <MaterialIcons name='logout' size={24} color="black" onPress={() => logout(disconnect)}/>
+                <MaterialIcons name='logout' size={24} color="white" onPress={() => logout(disconnect)}/>
                 <TouchableOpacity style={captainStyles.toggleContainer} onPress={() => setOnDuty(!onDuty)}>
-                <CustomText fontFamily='SemiBold' fontSize={12} style={{color: "#888"}}>
+                <CustomText fontFamily='SemiBold' fontSize={12} style={{color: "white"}}>
                     {onDuty ? "EN SERVICIO" : "FUERA DE SERVICIO"}
                 </CustomText>
 
@@ -64,7 +64,7 @@ const CaptainHeader = () => {
                 />
                 </TouchableOpacity>
 
-                <MaterialIcons name='notifications' size={24} color="black" />
+                <MaterialIcons name='notifications' size={24} color="white" />
             </View>
         </View>
 

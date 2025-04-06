@@ -86,7 +86,7 @@ const Home = () => {
 
   return (
     <View style={homeStyles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="orange" translucent={false}/>
+      <StatusBar barStyle="light-content" backgroundColor="#176fb0" translucent={false}/>
       <CaptainHeader />
 
       <FlatList
