@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Alert } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import React, { FC, memo, useEffect, useRef, useState } from 'react';
 import Mapbox, {
   Camera,
@@ -20,7 +20,7 @@ import { useWS } from '@/service/WSProvider';
 import bike from '@/assets/icons/bike_marker.png';
 import auto from '@/assets/icons/auto_marker.png';
 import cab from '@/assets/icons/cab_marker.png';
-
+import captainIcon from '@/assets/icons/cab.png'; // Asegúrate de tener un ícono para los "captains"
 
 const accesToken =
   'pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A';
@@ -29,8 +29,9 @@ Mapbox.setAccessToken(accesToken);
 const Map: FC<{ height: number }> = ({ height }) => {
   const mapRef = useRef<MapView>(null);
   const cameraRef = useRef<Camera>(null);
-  const { setLocation, location, outOfRange, SetOutOfRange } = useUserStore();
-  const [markers, setMarkers] = useState<any>([]);
+  const { setLocation, location, outOfRange } = useUserStore();
+  const [captainMarkers, setCaptainMarkers] = useState<any[]>([]);
+  const [randomMarkers, setRandomMarkers] = useState<any[]>([]);
   const { emit, on, off } = useWS();
   const isFocused = useIsFocused();
 
@@ -39,15 +40,13 @@ const Map: FC<{ height: number }> = ({ height }) => {
     if (status === 'granted') {
       try {
         const currentLocation = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = currentLocation.coords;
+        // Se puede centrar la cámara en la ubicación inicial
         handleGpsButtonPress();
-        // Aquí podrías centrar la cámara si lo requieres
-        
       } catch (error) {
-        console.log('Error getting current location');
+        console.log('Error getting current location', error);
       }
     } else {
-      console.log('Permission to acces location was denied');
+      console.log('Permission to access location was denied');
     }
   };
 
@@ -55,15 +54,13 @@ const Map: FC<{ height: number }> = ({ height }) => {
     askLocationAccess();
   }, [mapRef, isFocused]);
 
-  
-
+  // Manejo del WebSocket para los marcadores de "captains"
   useEffect(() => {
     if (location?.latitude && location?.longitude) {
       emit('subscribeToZone', {
         latitude: location.latitude,
         longitude: location.longitude
       });
-
       on('nearbyCaptains', (captains: any[]) => {
         const updatedMarkers = captains?.map((captain) => ({
           id: captain?.id,
@@ -73,15 +70,13 @@ const Map: FC<{ height: number }> = ({ height }) => {
           rotation: captain.coords.heading,
           visible: true
         }));
-        setMarkers(updatedMarkers);
+        setCaptainMarkers(updatedMarkers);
       });
       return () => {
         off('nearbyCaptains');
       };
     }
   }, [location, emit, on, off]);
-
-
 
   const handleGpsButtonPress = async () => {
     try {
@@ -94,133 +89,152 @@ const Map: FC<{ height: number }> = ({ height }) => {
           zoomLevel: 16,
           animationDuration: 200,
           animationMode: "flyTo"
-        })
-        const address = await reverseGeocode(latitude, longitude);
-        setLocation({
-          latitude,
-          longitude,
-          address
         });
+        const address = await reverseGeocode(latitude, longitude);
+        setLocation({ latitude, longitude, address });
       }
     } catch (error) {
       console.log('Error obteniendo la ubicación:', error);
     }
   };
 
+  // Genera marcadores aleatorios sólo si se tiene una ubicación y no se está fuera de rango
   const generateRandomMarkers = () => {
-    if(!location?.latitude || !location?.longitude || outOfRange) return;
+    if (!location?.latitude || !location?.longitude || outOfRange) return;
 
-    const types = ["bike", "auto", "cab"]
-    const newMarkers = Array.from({length: 20}, (_, index) => {
-      const randomType = types[Math.floor(Math.random() * types.length)]
-      const randomRotation = Math.floor(Math.random() * 360)
-      
+    const types = ["bike", "auto", "cab"];
+    const newMarkers = Array.from({ length: 20 }, (_, index) => {
+      const randomType = types[Math.floor(Math.random() * types.length)];
+      const randomRotation = Math.floor(Math.random() * 360);
       return {
-        id: index,
-        latitude: location?.latitude + (Math.random() - 0.5) * 0.01,
-        longitude: location?.longitude + (Math.random() - 0.5) * 0.01,
+        id: `random-${index}`,
+        latitude: location.latitude + (Math.random() - 0.5) * 0.01,
+        longitude: location.longitude + (Math.random() - 0.5) * 0.01,
         type: randomType,
         rotation: randomRotation,
-        visible: true,
-      }
+        visible: true
+      };
     });
-    setMarkers(newMarkers)
-  }
+    setRandomMarkers(newMarkers);
+  };
 /*
   useEffect(() => {
     generateRandomMarkers();
-  }, [location])
+  }, [location]);
 */
-  const bikeAll = markers.filter((marker: { type: string; }) => marker.type === 'bike');
-const markerBike = bikeAll.map((marker: { longitude: number; latitude: number; }) =>
-  // Se asignan las propiedades directamente (sin anidarlas en "marker")
-  point([marker.longitude, marker.latitude], marker)
-);
+  // Filtrado de los marcadores por tipo
+  const bikeMarkers = randomMarkers.filter((marker) => marker.type === 'bike');
+  const autoMarkers = randomMarkers.filter((marker) => marker.type === 'auto');
+  const cabMarkers = randomMarkers.filter((marker) => marker.type === 'cab');
 
-const autoAll = markers.filter((marker: { type: string; }) => marker.type === 'auto');
-const markerAuto = autoAll.map((marker: { longitude: number; latitude: number; }) =>
-  point([marker.longitude, marker.latitude], marker)
-);
+  // Preparamos los datos para cada capa (usamos @turf/helpers para generar puntos)
+  const bikeFeatures = bikeMarkers.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
+  const autoFeatures = autoMarkers.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
+  const cabFeatures = cabMarkers.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
+  const captainFeatures = captainMarkers.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
 
-const cabAll = markers.filter((marker: { type: string; }) => marker.type === 'cab');
-const markerCab = cabAll.map((marker: { longitude: number; latitude: number; }) =>
-  point([marker.longitude, marker.latitude], marker)
-);
-
-const handleOnDidFinishLoadingMap = async () => {
-  await handleGpsButtonPress()
-}
+  const handleOnDidFinishLoadingMap = async () => {
+    await handleGpsButtonPress();
+  };
 
   return (
     <View style={{ height: height, width: '100%' }}>
-    <Mapbox.MapView
-      scaleBarEnabled={false}
-      logoEnabled={false}
-      ref={mapRef}
-      style={{ flex: 1 }}
-      onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
-    >
-      {/* Declaramos las imágenes una única vez */}
-      <Images images={{ bike, auto, cab }} />
+      <Mapbox.MapView
+        scaleBarEnabled={false}
+        logoEnabled={false}
+        ref={mapRef}
+        style={{ flex: 1 }}
+        onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
+      >
+        {/* Declaramos las imágenes sólo una vez */}
+        <Images images={{ bike, auto, cab, captain: captainIcon }} />
 
-      <Camera ref={cameraRef} followZoomLevel={16} followUserLocation={!!location?.latitude ? false : true}/>
-      <LocationPuck
-        puckBearingEnabled
-        puckBearing="heading"
-        pulsing={{ isEnabled: true }}
-      />
+        <Camera
+          ref={cameraRef}
+          followZoomLevel={16}
+          followUserLocation={!!location?.latitude ? false : true}
+        />
+        <LocationPuck
+          puckBearingEnabled
+          puckBearing="heading"
+          pulsing={{ isEnabled: true }}
+        />
 
-      {/* Capa para cada tipo de marcador */}
-      {markerBike.length > 0 && (
-        <ShapeSource id="captains-bike" shape={featureCollection(markerBike)}>
-          <SymbolLayer
-            id="captains-icons-bike"
-            style={{
-              iconImage: 'bike',
-              iconAllowOverlap: true,
-              iconSize: 0.25,
-              iconAnchor: 'bottom',
-              iconRotate: ['get', 'rotation']
-            }}
-          />
-        </ShapeSource>
-      )}
+        {/* Capa para marcadores aleatorios */}
+        {bikeFeatures.length > 0 && (
+          <ShapeSource id="random-bikes" shape={featureCollection(bikeFeatures)}>
+            <SymbolLayer
+              id="random-bikes-layer"
+              style={{
+                iconImage: 'bike',
+                iconAllowOverlap: true,
+                iconSize: 0.25,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
 
-      {markerAuto.length > 0 && (
-        <ShapeSource id="captains-auto" shape={featureCollection(markerAuto)}>
-          <SymbolLayer
-            id="captains-icons-auto"
-            style={{
-              iconImage: 'auto',
-              iconAllowOverlap: true,
-              iconSize: 0.25,
-              iconAnchor: 'bottom',
-              iconRotate: ['get', 'rotation']
-            }}
-          />
-        </ShapeSource>
-      )}
+        {autoFeatures.length > 0 && (
+          <ShapeSource id="random-autos" shape={featureCollection(autoFeatures)}>
+            <SymbolLayer
+              id="random-autos-layer"
+              style={{
+                iconImage: 'auto',
+                iconAllowOverlap: true,
+                iconSize: 0.25,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
 
-      {markerCab.length > 0 && (
-        <ShapeSource id="captains-cab" shape={featureCollection(markerCab)}>
-          <SymbolLayer
-            id="captains-icons-cab"
-            style={{
-              iconImage: 'cab',
-              iconAllowOverlap: true,
-              iconSize: 0.25,
-              iconAnchor: 'bottom',
-              iconRotate: ['get', 'rotation']
-            }}
-          />
-        </ShapeSource>
-      )}
-    </Mapbox.MapView>
+        {cabFeatures.length > 0 && (
+          <ShapeSource id="random-cabs" shape={featureCollection(cabFeatures)}>
+            <SymbolLayer
+              id="random-cabs-layer"
+              style={{
+                iconImage: 'cab',
+                iconAllowOverlap: true,
+                iconSize: 0.25,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
 
-    <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
-      <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
-    </TouchableOpacity>
-  </View>
+        {/* Capa para los marcadores de "captains" recibidos vía WS */}
+        {captainFeatures.length > 0 && (
+          <ShapeSource id="captains" shape={featureCollection(captainFeatures)}>
+            <SymbolLayer
+              id="captains-layer"
+              style={{
+                iconImage: 'captain',
+                iconAllowOverlap: true,
+                iconSize: 0.25,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
+      </Mapbox.MapView>
+
+      <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
+        <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
+      </TouchableOpacity>
+    </View>
   );
 };
 
