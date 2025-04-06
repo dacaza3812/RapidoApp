@@ -46,3 +46,15 @@ export interface VersionClass {
     updatedAt: Date;
     __v:       number;
 }
+
+export interface Banners {
+    __v:         number;
+    _id:         string;
+    createdAt:   Date;
+    description: string;
+    imageUrl:    string;
+    link:        string;
+    targetCity:  string[];
+    title:       string;
+    updatedAt:   Date;
+}
