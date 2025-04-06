@@ -146,13 +146,13 @@ export const rideStyles = StyleSheet.create({
     backButton2: {
         flex: 1,
         marginLeft: 10,
-        backgroundColor: '#FFC107',
+        backgroundColor: '#176fb0',
         paddingVertical: 12,
         borderRadius: 8,
         alignItems: 'center',
     },
     backButtonText: {
-        color: '#000',
+        color: 'white',
     },
     swipeableContaniner: {
         position: 'absolute',

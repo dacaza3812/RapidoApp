@@ -19,7 +19,7 @@ export const captainStyles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 100,
         flexDirection: 'row',
-        borderColor: "#888",
+        borderColor: "white",
         alignItems: 'center',
         gap: 5
     },

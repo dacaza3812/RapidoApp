@@ -4,11 +4,18 @@ import { Colors } from '@/utils/Constants'
 import CustomText from './CustomText'
 import { RFValue } from 'react-native-responsive-fontsize'
 
+interface CustomButtonProps {
+    onPress: () => void;
+    title: string;
+    disabled?: boolean;
+    loading?: boolean;
+}
+
 const CustomButton: FC<CustomButtonProps> = ({
     onPress,
     title,
-    disabled,
-    loading
+    disabled = false,
+    loading = false
 }) => {
   return (
     <TouchableOpacity
@@ -28,7 +35,7 @@ const CustomButton: FC<CustomButtonProps> = ({
                 fontFamily='SemiBold'
                 style={{
                     fontSize: RFValue(12),
-                    color: disabled ? "#fff" : Colors.text
+                    color: disabled ? "#fff" : "white"
                 }}
             >
                 {title}

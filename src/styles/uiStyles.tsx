@@ -112,7 +112,7 @@ export const uiStyles = StyleSheet.create({
     },
     bannerContainer: {
         width: '100%',
-        height: screenWidth,
+        height: 300,
         marginBottom: 100
     },
     locationInputs: {
