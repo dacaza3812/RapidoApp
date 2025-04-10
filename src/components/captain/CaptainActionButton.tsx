@@ -48,7 +48,7 @@ const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress
 
             <View style={orderStyles.flexRowBase}>
                 <View>
-                    <View style={orderStyles.pickupHollowCircle}/>
+                    <View style={orderStyles.dropHollowCircle}/>
                     <View style={orderStyles.continuousLine}/>
                 </View>
                 <View style={orderStyles.infoText}>
