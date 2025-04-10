@@ -24,6 +24,7 @@ export const commonStyles = StyleSheet.create({
         gap: 15,
     },
     flexRow: {
+        marginTop: 10,
         flexDirection: 'row',
         alignItems: 'center',
     },

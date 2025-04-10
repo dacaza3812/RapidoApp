@@ -26,14 +26,18 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
   
   useEffect(()=> {
     if(item?.status === "COMPLETED"){
-      console.log(item?.status)
+     
       Alert.alert("Viaje Completado", "Usted será redirigido a la vista principal");
       resetAndNavigate("/customer/home")
       return
     }
   }, [item?.status])
 
+  
+
   const { emit } = useWS()
+  
+ 
   return (
     <View>
       <View style={rideStyles?.headerContainer}>
@@ -110,10 +114,9 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
         <TouchableOpacity 
           style={rideStyles.cancelButton} 
           onPress={() => { 
-            if(item?.status !== "START"){
+            
               Alert.alert("Acción no permitida", "No puedes cancelar este viaje en este estado.");
-              return;
-            }
+            
             emit("cancelRide", item?._id)
           }}
         >

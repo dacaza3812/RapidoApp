@@ -10,6 +10,7 @@ import axios from 'axios';
 import { BASE_URL } from '@/service/config';
 import { Banners } from '@/utils/types';
 import { useUserStore } from '@/store/userStore';
+import { Colors } from '@/utils/Constants';
 
 const cubes = [
   { name: "Moto", imageUri: require("@/assets/icons/bike.png") },
@@ -20,7 +21,6 @@ const cubes = [
 ];
 
 const useBannersByCity = () => {
-  type citiesType = string[] | string | undefined;
   const [banners, setBanners] = useState<Banners[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -33,6 +33,8 @@ const useBannersByCity = () => {
     const city = partesCity[partesCity.length - 2];
     setLoading(true);
     try {
+      if (!city) return
+
       const response = await axios.post(`${BASE_URL}/banner/by-city`, { cities: [city.toString()] });
       setBanners(response.data.banners);
     } catch (err) {
@@ -84,15 +86,15 @@ const SheetContent = () => {
   return (
     <View style={{ height: "100%" }}>
       <TouchableOpacity style={uiStyles.searchBarContainer} onPress={() => router.navigate("/customer/selectlocations")}>
-        <Ionicons name='search-outline' size={RFValue(16)} color="black" />
-        <CustomText fontFamily='Medium' fontSize={11}>¿A dónde quieres ir?</CustomText>
+        <Ionicons name='search-outline' size={RFValue(16)} color={Colors.text} />
+        <CustomText fontFamily='Medium' fontSize={11} style={{color: Colors.text}}>¿A dónde quieres ir?</CustomText>
       </TouchableOpacity>
 
       <View style={commonStyles.flexRowBetween}>
         <CustomText fontFamily='Medium' fontSize={11}>Explora</CustomText>
         <TouchableOpacity style={commonStyles.flexRow} onPress={() => router.navigate("/customer/selectlocations")}>
           <CustomText fontFamily='Regular' fontSize={10}>Ver Todo</CustomText>
-          <Ionicons name='chevron-forward' size={RFValue(14)} color="black" />
+          <Ionicons name='chevron-forward' size={RFValue(14)} color={Colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -161,13 +163,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center', // centra verticalmente el contenido
     padding: 10,
     overflow: 'hidden',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     marginVertical: 10,
   },
   bannerTitle: {
     fontFamily: 'Bold',
     fontSize: 18,
-    color: 'black',
+    color: Colors.text,
     marginBottom: 5,
     textAlign: 'center',
   },
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
   bannerDescription: {
     fontFamily: 'Regular',
     fontSize: 14,
-    color: 'black',
+    color: Colors.text,
     textAlign: 'center',
   },
 });

@@ -6,6 +6,8 @@ import { router } from 'expo-router'
 import { getMessaging, getToken, onMessage, setBackgroundMessageHandler } from "@react-native-firebase/messaging";
 import { initializeApp, getApps } from '@react-native-firebase/app';
 import * as Notifications from "expo-notifications";
+import { StatusBar } from 'expo-status-bar'
+import { Colors } from '@/utils/Constants'
 /*
 export const firebaseConfig = {
   apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
@@ -79,13 +81,14 @@ const Role = () => {
 */
   return (
     <View style={roleStyles.container}>
+      <StatusBar translucent={false} backgroundColor={Colors.primary}/>
       <Image
         source={require("@/assets/images/logo_t.png")}
         style={{
           resizeMode: 'contain',
-          height: 100,
+          height: 150,
           marginTop: 50,
-          marginBottom: 50
+          marginBottom: -10
       }}
       />
       <CustomText fontFamily='Medium' variant='h6'>

@@ -4,7 +4,7 @@ import {StatusBar} from 'expo-status-bar'
 import LocationBar from '@/components/customer/LocationBar'
 import { homeStyles } from '@/styles/homeStyles'
 import DraggableMap from '@/components/customer/DraggableMap'
-import { screenHeight } from '@/utils/Constants'
+import { Colors, screenHeight } from '@/utils/Constants'
 import  BottomSheet, {BottomSheetScrollView} from "@gorhom/bottom-sheet"
 import SheetContent from '@/components/customer/SheetContent'
 import { getMyRides } from '@/service/rideService'
@@ -48,6 +48,8 @@ const Home = () => {
         handleIndicatorStyle={{
           backgroundColor: "#ccc"
         }}
+        handleStyle={{backgroundColor: Colors.background}}
+        backgroundStyle={{backgroundColor: Colors.background}}
         enableOverDrag={false}
         enableDynamicSizing
         style={{zIndex:4}}

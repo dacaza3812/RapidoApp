@@ -27,7 +27,7 @@ export const captainStyles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.background,
         paddingTop: screenHeight * 0.2
     },
     icon: {
@@ -58,14 +58,14 @@ export const orderStyles = StyleSheet.create({
         height: '100%',
         position: "absolute",
         top: 12,
-        backgroundColor: Colors.secondary,
+        backgroundColor: Colors.primary,
         alignSelf: 'center',
         marginLeft: 2
     },
     borderLine: {
         borderLeftWidth: 1,
         paddingLeft: 12,
-        borderLeftColor: Colors.secondary
+        borderLeftColor: Colors.primary
     },
     label: {
         opacity: 0.4,
@@ -91,13 +91,13 @@ export const orderStyles = StyleSheet.create({
     container: {
         padding: 10,
         borderRadius: 10,
-        backgroundColor: Colors.background,
+        backgroundColor: Colors.secondBackground,
         shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
         shadowColor: '#000',
         elevation: 10,
-        margin: 10
+        margin: 10,
     },
     flexRowEnd: {
         flexDirection: 'row',
@@ -114,7 +114,7 @@ export const orderStyles = StyleSheet.create({
     locationsContainer: {
         paddingVertical: 10,
         borderTopWidth: 1,
-        borderTopColor: Colors.secondary,
+        borderTopColor: Colors.primary,
         marginTop: 10
     }
 })

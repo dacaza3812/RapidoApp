@@ -28,7 +28,7 @@ const CounterButton:FC<CounterButtonProps> = ({title,initialCount,onCountdownEnd
             colorsTime={[12,5,2,0]}
         >
             {
-                ({remainingTime}) => <CustomText fontSize={10} fontFamily='SemiBold'>{remainingTime}</CustomText>
+                ({remainingTime}) => <CustomText style={{color: "black"}} fontSize={10} fontFamily='SemiBold'>{remainingTime}</CustomText>
             }
         </CountdownCircleTimer>
       </View>
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         borderRadius: 50
     },
     text: {
-        color: "#000",
+        color: Colors.text,
         marginRight: 10
     },
 });

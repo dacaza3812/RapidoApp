@@ -78,6 +78,8 @@ const CaptainLiveTracking: FC<{ drop: any, pickup: any, captain: any, status:str
         } 
     }, [drop?.latitude, pickup?.latitude, captain.latitude])
 
+   
+
   return (
     <View style={{flex: 1}}>
           <MapView
@@ -101,6 +103,7 @@ const CaptainLiveTracking: FC<{ drop: any, pickup: any, captain: any, status:str
               showsScale={false}
               showsBuildings={false}
               showsPointsOfInterest={false}
+              
           >
         { 
                 captain?.latitude && pickup?.latitude && (

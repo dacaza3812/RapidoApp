@@ -36,7 +36,7 @@ export const uiStyles = StyleSheet.create({
     },
     locationBar: {
         width: '88%',
-        backgroundColor: "white",
+        backgroundColor: "#222222",
         borderRadius: 10,
         height: 38,
         shadowOffset: { width: 1, height: 1 },
@@ -53,7 +53,8 @@ export const uiStyles = StyleSheet.create({
         fontSize: RFValue(10),
         fontFamily: 'Regular',
         color: Colors.text,
-        opacity: 0.8
+        opacity: 0.8,
+        fontWeight: "400"
     },
     searchBarContainer: {
         flexDirection: 'row',
@@ -62,7 +63,7 @@ export const uiStyles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 20,
         padding: 10,
-        backgroundColor: Colors.secondary_light
+        backgroundColor: "#3C3D37"
     },
     cubeContainer: {
         width: '22.8%',
@@ -84,7 +85,7 @@ export const uiStyles = StyleSheet.create({
         borderRadius: 10,
         height: 60,
         marginBottom: 10,
-        backgroundColor: '#E5E7EA'
+        backgroundColor: Colors.secondBackground
     },
     cubes: {
         flexDirection: 'row',
@@ -113,12 +114,12 @@ export const uiStyles = StyleSheet.create({
     bannerContainer: {
         width: '100%',
         height: 300,
-        marginBottom: 100
+        marginBottom: 100,
     },
     locationInputs: {
         padding: 15,
         borderBottomWidth: 1,
-        borderColor: '#ccc'
+        borderColor: '#ccc',
     },
     suggestionText: {
         marginTop: 6,

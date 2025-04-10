@@ -74,6 +74,10 @@ const Home = () => {
     }
   }, [onDuty, on, off, isFocused])
 
+  on("rideCanceled", (data) => {
+    console.log("Capitán recibido cancelación: ", data.message);
+  });
+
   const removeRide = (id: string) => {
     setRideOffers((prevOffers) => prevOffers.filter((offer) => offer._id !== id));
   }
@@ -97,7 +101,7 @@ const Home = () => {
         keyExtractor={(item: any) => item?._id || Math.random().toString()}
         ListEmptyComponent={
           <View style={captainStyles?.emptyContainer}>
-            <Image source={require("@/assets/icons/ride.jpg")} style={captainStyles?.emptyImage}/>
+            <Image source={require("@/assets/icons/ride.png")} style={captainStyles?.emptyImage}/>
             <CustomText fontSize={12} style={{textAlign: "center"}}>
               {onDuty ?
               "No hay carreras disponibles! Mantente activo" :

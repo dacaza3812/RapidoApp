@@ -19,7 +19,7 @@ export const roleStyles = StyleSheet.create({
         borderRadius: 15,
         borderWidth: 1,
         borderColor: '#ccc',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.primary,
         marginVertical: 10,
         alignItems: 'center',
     },
@@ -30,7 +30,7 @@ export const roleStyles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: Colors.text,
     },
     image: {
         height: 120,
@@ -40,6 +40,7 @@ export const roleStyles = StyleSheet.create({
     },
     description: {
         fontSize: 14,
-        color: '#666',
+        color: 'black',
+        fontWeight: 'condensedBold',
     },
 })

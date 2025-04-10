@@ -153,6 +153,8 @@ const Map: FC<{ height: number }> = ({ height }) => {
         ref={mapRef}
         style={{ flex: 1 }}
         onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
+        styleURL='mapbox://styles/mapbox/dark-v11'
+        attributionEnabled={false}  
       >
         {/* Declaramos las imágenes sólo una vez */}
         <Images images={{ bike, auto, cab, captain: captainIcon }} />

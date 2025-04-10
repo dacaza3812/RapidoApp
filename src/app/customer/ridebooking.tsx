@@ -13,6 +13,7 @@ import { RFValue } from 'react-native-responsive-fontsize';
 import CustomButton from '@/components/shared/CustomButton';
 import RoutesMap from '@/components/customer/RoutesMap';
 import { createRide } from '@/service/rideService';
+import { Colors } from '@/utils/Constants';
 
 const RideBooking = () => {
   const route = useRoute() as any;
@@ -144,7 +145,7 @@ const RideBooking = () => {
         </ScrollView>
       </View>
       <TouchableOpacity style={rideStyles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={RFValue(14)} style={{ left: 0 }} color="black" />
+        <Ionicons name="arrow-back" size={RFValue(14)} style={{ left: 0 }} color={Colors.text} />
       </TouchableOpacity>
       <View style={rideStyles.bookingContainer}>
         <View style={commonStyles.flexRowBetween}>
@@ -182,7 +183,7 @@ const RideBooking = () => {
 const RideOption = React.memo(({ ride, selected, onSelect }: any) => (
   <TouchableOpacity
     onPress={() => onSelect(ride?.type)}
-    style={[rideStyles.rideOption, { borderColor: selected === ride.type ? "#222" : "#ddd" }]}
+    style={[rideStyles.rideOption, { borderColor: selected === ride.type ? Colors.text : Colors.background }]}
   >
     <View style={commonStyles.flexRowBetween}>
       <Image source={ride?.icon} style={rideStyles.rideIcon} />
@@ -195,8 +196,8 @@ const RideOption = React.memo(({ ride, selected, onSelect }: any) => (
         </CustomText>
       </View>
       <View style={rideStyles.priceContainer}>
-        <CustomText fontFamily="Medium" fontSize={14}>
-          ${ride?.price?.toFixed(2)}
+        <CustomText fontFamily="Medium" fontSize={13}>
+          {ride?.price?.toFixed(2)} CUP
         </CustomText>
         {selected === ride.type && (
           <Text style={rideStyles.discountedPrice}>${Number(ride?.price + 10).toFixed(2)}</Text>

@@ -5,10 +5,10 @@ import { RFValue } from "react-native-responsive-fontsize";
 export const modalStyles = StyleSheet.create({
     modalContainer: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: Colors.secondBackground
     },
     footerContainer: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.secondBackground,
         shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
@@ -18,6 +18,7 @@ export const modalStyles = StyleSheet.create({
     },
     addressText: {
         fontSize: RFValue(12),
+        color: Colors.text,
     },
     button: {
         backgroundColor: Colors.iosColor,
@@ -43,10 +44,11 @@ export const modalStyles = StyleSheet.create({
         fontWeight: "600",
         marginTop: 15,
         fontSize: RFValue(13),
-        textTransform: 'capitalize'
+        textTransform: 'capitalize',
+        color: Colors.text
     },
     cancelButton: {
-        color: Colors.iosColor,
+        color: Colors.primary,
         fontSize: RFValue(13),
         position: "absolute",
         top: -18,

@@ -8,6 +8,7 @@ import { orderStyles } from '@/styles/captainStyles';
 import SwipeButton from "rn-swipe-button"
 import { RFValue } from 'react-native-responsive-fontsize';
 import { Link } from 'expo-router';
+import { Colors } from '@/utils/Constants';
 
 const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress: () => void}> = ({onPress,ride,title,color}) => {
 
@@ -18,7 +19,7 @@ const CaptainActionButton: FC<{ride: any, color?: string; title: string, onPress
   return (
     <View style={rideStyles?.swipeableContaninerCaptain}>
         <View style={commonStyles?.flexRowBetween}>
-            <CustomText fontSize={11} style={{marginTop: 10, marginBottom: 3}} numberOfLines={1} fontFamily='Medium'>
+            <CustomText fontSize={11} style={{marginTop: 10, marginBottom: 3, color: Colors.text}} numberOfLines={1} fontFamily='Medium'>
                 Conoce al Cliente
             </CustomText>
             <CustomText fontSize={11} style={{marginTop: 10, marginBottom: 3}} numberOfLines={1} fontFamily='Medium'>

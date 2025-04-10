@@ -125,15 +125,15 @@ const Selectlocations = () => {
     <View style={homeStyles.container}>
       <StatusBar
         style='light'
-        backgroundColor='#176fb0'
+        backgroundColor={Colors.primary}
         translucent={false}
       />
 
       <SafeAreaView />
 
       <TouchableOpacity style={commonStyles.flexRow} onPress={() => router.back()}>
-        <Ionicons name='chevron-back' size={24} color={Colors.iosColor}/>
-        <CustomText fontFamily='Regular' style={{color: Colors.iosColor}}>Atrás</CustomText>
+        <Ionicons name='chevron-back' size={24} color={Colors.primary}/>
+        <CustomText fontFamily='Regular' style={{color: Colors.primary}}>Atrás</CustomText>
       </TouchableOpacity>
 
       <View style={uiStyles.locationInputs}>

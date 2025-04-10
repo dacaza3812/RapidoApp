@@ -183,3 +183,9 @@ export const vehicleIcons: Record<'bike' | 'auto' | 'cabEconomy' | 'cabPremium',
     arrivalDate.setMinutes(arrivalDate.getMinutes() + travelTimeMinutes);
     return arrivalDate;
   };
+
+  export const getRoute = async(origin: any[], dest: any[]) => {
+    console.log("origin" ,origin)
+    const res = await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${origin[0]}, ${origin[1]}; ${dest[0]}, ${dest[1]}?alternatives=false&annotations=distance%2Cduration&geometries=geojson&overview=full&steps=false&access_token=pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A`);
+    return await res.json()
+  }

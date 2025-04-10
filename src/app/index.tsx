@@ -13,6 +13,8 @@ import * as Application from 'expo-application';
 import { type Version } from '@/utils/types'
 import { MaterialIcons } from '@expo/vector-icons'
 import { authStyles } from '@/styles/authStyles'
+import { Colors } from '@/utils/Constants'
+import { StatusBar } from 'expo-status-bar'
 
 
 interface DecodedToken {
@@ -107,7 +109,7 @@ const Main = () => {
     if (loaded && !hasNavigated) {
       const timeoutId = setTimeout(async () => {
 
-        const isUpdateRequired = await checkVersion();
+        const isUpdateRequired = false // await checkVersion();
         if (!isUpdateRequired && !errorMessage) {
           await tokenCheck();
           setHasNavigated(true);
@@ -123,6 +125,7 @@ const Main = () => {
 
   return (
     <>
+    <StatusBar translucent={false} backgroundColor={Colors.primary}/>
       {updateRequired && (
         <Modal visible={true} transparent={true}>
           <View style={styles.modalContainer}>
@@ -172,12 +175,12 @@ const Main = () => {
         )
       }
       <View style={commonStyles.container}>
-        <ActivityIndicator size="large" color={"#ffc920"} />
+        <ActivityIndicator size="large" color={Colors.primary} />
         <Image
           source={require("@/assets/images/logo_t.png")}
           style={splashStyles.img}
         />
-        <CustomText variant="h8" fontFamily="Light" style={splashStyles.text}>
+        <CustomText variant="h6" fontFamily="Light" style={splashStyles.text}>
           Desarrollado con ❤ en 🇨🇺
         </CustomText>
       </View>

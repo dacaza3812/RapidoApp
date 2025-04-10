@@ -1,16 +1,16 @@
-import { screenHeight, screenWidth } from "@/utils/Constants";
+import { Colors, screenHeight, screenWidth } from "@/utils/Constants";
 import { Platform, StyleSheet } from "react-native";
 
 export const rideStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: Colors.background
     },
     backButton: {
         position: "absolute",
         top: Platform.OS === 'android' ? 20 : 60,
         left: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.primary,
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center',
@@ -45,7 +45,7 @@ export const rideStyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         padding: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.secondBackground,
         position: "absolute",
         bottom: 0,
         borderTopLeftRadius: 20,
@@ -62,7 +62,7 @@ export const rideStyles = StyleSheet.create({
         shadowColor: '#000',
         elevation: 10,
         width: screenWidth,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.secondBackground,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -82,7 +82,7 @@ export const rideStyles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         marginVertical: 5,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.background,
         borderWidth: 1,
 
     },
@@ -93,7 +93,7 @@ export const rideStyles = StyleSheet.create({
         alignItems: 'flex-end'
     },
     fastestLabel: {
-        color: 'green',
+        color: Colors.primary,
         fontSize: 10,
         marginLeft: 5
     },
@@ -130,7 +130,7 @@ export const rideStyles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 10,
         borderColor: '#ddd',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.secondBackground,
     },
     cancelButton: {
         flex: 1,
@@ -172,7 +172,7 @@ export const rideStyles = StyleSheet.create({
     swipeableContaninerCaptain: {
         width: '100%',
         padding: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.background,
         shadowOffset: { width: 1, height: 1 },
         shadowOpacity: 0.2,
         shadowRadius: 4,

@@ -1,4 +1,4 @@
-import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native'
 import React, { FC } from 'react'
 import { useWS } from '@/service/WSProvider';
 import { rideStyles } from '@/styles/rideStyles';
@@ -7,6 +7,7 @@ import { vehicleIcons } from '@/utils/mapUtils';
 import CustomText from '../shared/CustomText';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Colors } from '@/utils/Constants';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
@@ -16,10 +17,28 @@ interface RideItem {
   pickup?: {address: string};
   drop?: {address: string};
   fare?: number;
+  status?: string
 }
 
 const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
   const {emit} = useWS()
+
+  const handleCancel = () => {
+    Alert.alert(
+      "Cancelar Viaje",
+      "¿Realmente desea cancelar el viaje?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Sí",
+          onPress: () => {
+            emit("cancelRide", item._id); // Notificar al servidor
+          }
+        }
+      ]
+    );
+  };
+  
 
   return (
     <View>
@@ -38,7 +57,7 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
         </View>
 
         <ActivityIndicator
-        color="black"
+        color={Colors.text}
         size="small"
       />
       </View>
@@ -87,18 +106,27 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
       </View> 
 
       <View style={rideStyles?.bottomButtonContainer}>
-          <TouchableOpacity style={rideStyles.cancelButton} onPress={() => emit("cancelRide", item?._id)}>
-            <CustomText style={rideStyles?.cancelButtonText}>
-              Cancelar
-            </CustomText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={rideStyles.backButton2} onPress={() => router.back()}>
-            <CustomText style={rideStyles?.backButtonText}>
-              Atras
-            </CustomText>
-          </TouchableOpacity>
-      </View>
+      <TouchableOpacity 
+        style={rideStyles.cancelButton} 
+        onPress={handleCancel}
+        disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
+      >
+        <CustomText style={rideStyles?.cancelButtonText}>
+          Cancelar
+        </CustomText>
+      </TouchableOpacity>
+      
+      {/* Botón "Atrás" deshabilitado si el viaje ya comenzó */}
+      <TouchableOpacity 
+        style={rideStyles.backButton2} 
+        onPress={() => router.back()}
+        disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
+      >
+        <CustomText style={rideStyles?.backButtonText}>
+          Atrás
+        </CustomText>
+      </TouchableOpacity>
+    </View>
 
       </View>
     

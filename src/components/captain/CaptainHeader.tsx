@@ -9,6 +9,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { logout } from '@/service/authService'
 import CustomText from '../shared/CustomText'
 import * as Location from "expo-location"
+import { Colors } from '@/utils/Constants'
 
 const CaptainHeader = () => {
     const {disconnect, emit} = useWS()
@@ -51,7 +52,7 @@ const CaptainHeader = () => {
             <View style={commonStyles.flexRowBetween}>
                 <MaterialIcons name='logout' size={24} color="white" onPress={() => logout(disconnect)}/>
                 <TouchableOpacity style={captainStyles.toggleContainer} onPress={() => setOnDuty(!onDuty)}>
-                <CustomText fontFamily='SemiBold' fontSize={12} style={{color: "white"}}>
+                <CustomText fontFamily='SemiBold' fontSize={12} style={{color: Colors.text}}>
                     {onDuty ? "EN SERVICIO" : "FUERA DE SERVICIO"}
                 </CustomText>
 

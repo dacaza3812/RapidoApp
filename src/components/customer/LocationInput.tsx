@@ -2,6 +2,7 @@ import { View, Text, TextInputProps, StyleSheet, TextInput, TouchableOpacity } f
 import React, { FC } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { Colors } from '@/utils/Constants';
 
 interface LocationInputProps extends TextInputProps {
     placeholder: string;
@@ -16,13 +17,13 @@ const LocationInput: FC<LocationInputProps> = ({placeholder, type, value, onChan
 
   return (
     <View style={[styles.container, styles.focusedContainer, {
-        backgroundColor: value == "" ? "#fff" : "#f2f2f2"
+        backgroundColor: value == "" ? Colors.secondBackground : "#f2f2f2"
     }]}>
         <View style={[styles.dot, {backgroundColor: dotColor}]}/>
         <TextInput
             style={[
                 styles.input, {
-                    backgroundColor: value == "" ? "#fff" : "#f2f2f2"
+                    backgroundColor: value == "" ? Colors.secondBackground : "#f2f2f2"
                 }
             ]}
             placeholder={placeholder}

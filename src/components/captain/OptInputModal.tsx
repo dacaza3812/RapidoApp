@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity } from 'react-native'
 import React, { FC, memo, useRef, useState } from 'react'
 import { modalStyles } from '@/styles/modalStyles';
+import { Colors } from '@/utils/Constants';
 
 interface OptInputModalProps {
     visible: boolean;
@@ -86,6 +87,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 18,
         borderRadius: 8,
+        color: Colors.text
     },
     confirmButton: {
         backgroundColor: "#007AFF",

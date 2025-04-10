@@ -10,6 +10,7 @@ import CustomText from '../shared/CustomText';
 import { Ionicons } from '@expo/vector-icons';
 import CounterButton from './CounterButton';
 import { resetAndNavigate } from '@/utils/Helpers';
+import { Colors } from '@/utils/Constants';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium";
 
@@ -115,7 +116,7 @@ const CaptainRidesItem: FC<{ item: RideItem, removeIt: () => void }> = ({ item, 
 
             <View style={orderStyles?.flexRowEnd}>
                 <TouchableOpacity onPress={removeIt}>
-                    <Ionicons name='close-circle' size={24} color="black" />
+                    <Ionicons name='close-circle' size={24} color={Colors.text} />
                 </TouchableOpacity>
 
                 <CounterButton

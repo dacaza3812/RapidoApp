@@ -1,184 +1,230 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import React, { FC, memo, useEffect, useRef, useState } from 'react'
-import MapView, { Marker, Polyline } from 'react-native-maps'
-import { customMapStyle, tunasIntialRegion } from '@/utils/CustomMap'
-import MapViewDirectionsAlt from '../shared/MapViewDirectionsAlt'
-import { Colors } from '@/utils/Constants'
-import { getPoints } from '@/utils/mapUtils'
-import { mapStyles } from '@/styles/mapStyles'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { RFValue } from 'react-native-responsive-fontsize'
+import { View, TouchableOpacity } from 'react-native';
+import React, { FC, memo, useEffect, useRef, useState } from 'react';
+import Mapbox, {
+  Camera,
+  Images,
+  MapView,
+  ShapeSource,
+  SymbolLayer,
+  LineLayer
+} from '@rnmapbox/maps';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { mapStyles } from '@/styles/mapStyles';
+import { getPoints, getRoute } from '@/utils/mapUtils';
+import { Colors } from '@/utils/Constants';
+import { point, lineString, featureCollection } from '@turf/helpers';
+import markerIcon from '@/assets/icons/marker.png';
+import dropMarkerIcon from '@/assets/icons/drop_marker.png';
+import cabMarkerIcon from '@/assets/icons/cab_marker.png';
+import { Direction } from '@/utils/types';
 
-const apikey = process.env.EXPO_PUBLIC_MAPBOX_API_KEY || "sk.eyJ1IjoiZGFjYXphIiwiYSI6ImNtNmpjMmhmajBobWoya3ByNGhlMnZlZWgifQ.QJmQ4pkf78lHlqTFIUCXTQ"
+Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_API_KEY || '');
 
-const LiveTrackingMap: FC<{height: number, drop: any, pickup: any, captain: any, status:string}> = ({
-    drop,
-    status,
-    height,
-    pickup,
-    captain
-}) => {
+const LiveTrackingMap: FC<{
+  height: number;
+  drop: any;
+  pickup: any;
+  captain: any;
+  status: string;
+}> = ({ drop, status, height, pickup, captain }) => {
+  const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<Camera>(null);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
+  const [route, setRoute] = useState<Direction | null>(null);
+  const calculateCenter = () => {
+    if (pickup?.latitude && drop?.latitude) {
+      return [
+        (pickup.longitude + drop.longitude) / 2,
+        (pickup.latitude + drop.latitude) / 2
+      ];
+    }
+    return [pickup?.longitude || 0, pickup?.latitude || 0];
+  };
 
-    const mapRef = useRef<MapView>(null)
-    const [isUserInteracting, setIsUserInteracting] = useState(false)
+  const fitToMarkers = async () => {
+    if (isUserInteracting) return;
 
-    const fitToMarkers = async() => {
-        if(isUserInteracting) return;
-        const coordinates = [];
-        
-        if(pickup?.latitude && pickup?.longitude && (status === "START")){
-            coordinates.push({latitude: pickup.latitude, longitude: pickup.longitude});
-        }
-
-        if(drop?.latitude && drop?.longitude && status === "ARRIVED"){
-            coordinates.push({latitude: drop.latitude, longitude: drop.longitude});
-        }
-
-        if(captain?.latitude && captain?.longitude){
-            coordinates.push({latitude: captain.latitude, longitude: captain.longitude});
-        }
-
-        if(coordinates.length === 0) return;
-        
-        try {
-            mapRef.current?.fitToCoordinates(coordinates, {
-                edgePadding: {top: 50, right: 50, bottom:50, left: 50},
-                animated: true
-            })
-        } catch (error) {
-            console.log(error)
-        }
+    const coordinates = [];
+    if (pickup?.latitude && status === 'START') {
+      coordinates.push([pickup.longitude, pickup.latitude]);
+    }
+    if (drop?.latitude && status === 'ARRIVED') {
+      coordinates.push([drop.longitude, drop.latitude]);
+    }
+    if (captain?.latitude) {
+      coordinates.push([captain.longitude, captain.latitude]);
     }
 
-    const calculateInitialRegion = () => {
-            if(pickup?.latitude && drop?.latitude){
-                const latitude = (pickup?.latitude + drop?.latitude) / 2
-                const longitude = (pickup?.longitude + drop?.longitude) / 2
-                return {
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05,
-                }
-            }
-            return tunasIntialRegion
-    };
-    
-    
-    useEffect(() => {
-        
-        if(pickup?.latitude && drop?.latitude){
-            fitToMarkers();
-        } 
-    }, [drop?.latitude, pickup?.latitude, captain.latitude])
+    if (coordinates.length === 0) return;
+
+    const bounds = coordinates.reduce(
+      (acc, coord) => {
+        return [
+          Math.min(acc[0], coord[0]),
+          Math.min(acc[1], coord[1]),
+          Math.max(acc[2], coord[0]),
+          Math.max(acc[3], coord[1])
+        ];
+      },
+      [Infinity, Infinity, -Infinity, -Infinity]
+    );
+
+    cameraRef.current?.setCamera({
+      bounds: {
+        ne: [bounds[2], bounds[3]],
+        sw: [bounds[0], bounds[1]],
+        paddingTop: 50,
+        paddingRight: 50,
+        paddingBottom: 50,
+        paddingLeft: 50
+      },
+      animationDuration: 1000
+    });
+  };
+
+  useEffect(() => {
+    if (pickup?.latitude || drop?.latitude || captain?.latitude) {
+      onNavigate()
+      fitToMarkers();
+    }
+  }, [drop, pickup, captain]);
+
+  
+const onNavigate = async () => {
+      const routes = await getRoute([pickup.longitude, pickup.latitude], [drop.longitude, drop.latitude])
+      setRoute(routes)
+    }
+
+    const directionCoordinate = route?.routes[0].geometry.coordinates
+
 
   return (
-    <View style={{height: height, width: "100%"}}>
-          <MapView
-              ref={mapRef}
-              maxZoomLevel={20}
-              followsUserLocation
-              style={{ flex: 1 }}
-              initialRegion={calculateInitialRegion()}
-              provider='google'
-              showsMyLocationButton={false}
-              showsCompass={false}
-              showsIndoors={false}
-              customMapStyle={customMapStyle}
-              showsUserLocation={true}
-              onRegionChange={() => setIsUserInteracting(true)}
-              onRegionChangeComplete={() => setIsUserInteracting(false)}
-              minZoomLevel={12}
-              pitchEnabled={false}
-              showsIndoorLevelPicker={false}
-              showsTraffic={false}
-              showsScale={false}
-              showsBuildings={false}
-              showsPointsOfInterest={false}
+    <View style={{ height: height, width: '100%' }}>
+      <Mapbox.MapView
+        style={{ flex: 1 }}
+        scaleBarEnabled={false}
+        logoEnabled={false}
+        attributionEnabled={false}
+        onMapIdle={() => setIsUserInteracting(false)}
+        onCameraChanged={() => setIsUserInteracting(true)}
+        ref={mapRef}
+        styleURL='mapbox://styles/mapbox/dark-v11'
+      >
+        <Images
+          images={{
+            marker: markerIcon,
+            dropMarker: dropMarkerIcon,
+            cabMarker: cabMarkerIcon
+          }}
+        />
+
+        <Camera
+          ref={cameraRef}
+          centerCoordinate={calculateCenter()}
+          zoomLevel={14}
+          animationMode="flyTo"
+          followUserLocation={true}
+          followZoomLevel={14}
+          followPitch={0}
+        />
+
+        {/* Marcadores */}
+        {pickup?.latitude && (
+          <ShapeSource
+            id="pickup"
+            shape={point([pickup.longitude, pickup.latitude])}
           >
-        { 
-                captain?.latitude && pickup?.latitude && (
-                    <MapViewDirectionsAlt
-                        origin={captain}
-                        destination={status === "START" ? pickup: drop}
-                        apikey={apikey}
-                        strokeWidth={5}
-                        precision="high"
-                        onReady={fitToMarkers}
-                        strokeColor={Colors.iosColor}
-                        onError={(err) => console.log(err)}
-                    />
-                ) 
-            }
+            <SymbolLayer
+              id="pickup-layer"
+              style={{
+                iconImage: 'marker',
+                iconSize: 0.5,
+                iconAnchor: 'bottom'
+              }}
+            />
+          </ShapeSource>
+        )}
 
-{
-                drop?.latitude && (
-                    <Marker
-                        coordinate={{latitude: drop.latitude, longitude: drop.longitude}}
-                        anchor={{x: 0.5, y:1}}
-                        zIndex={1}
-                    >
-                        <Image
-                            source={require("@/assets/icons/drop_marker.png")}
-                            style={{height: 30, width: 30, resizeMode: "contain"}}
-                        />
-                    </Marker>
-                )
-            }
+        {drop?.latitude && (
+          <ShapeSource
+            id="drop"
+            shape={point([drop.longitude, drop.latitude])}
+          >
+            <SymbolLayer
+              id="drop-layer"
+              style={{
+                iconImage: 'dropMarker',
+                iconSize: 0.5,
+                iconAnchor: 'bottom'
+              }}
+            />
+          </ShapeSource>
+        )}
 
-            {
-                            pickup?.latitude && (
-                                <Marker
-                                    coordinate={{latitude: pickup.latitude, longitude: pickup.longitude}}
-                                    anchor={{x: 0.5, y:1}}
-                                    zIndex={2}
-                                >
-                                    <Image
-                                        source={require("@/assets/icons/marker.png")}
-                                        style={{height: 30, width: 30, resizeMode: "contain"}}
-                                    />
-                                </Marker>
-                            ) 
-                        }
+        {captain?.latitude && (
+          <ShapeSource
+            id="captain"
+            shape={point([captain.longitude, captain.latitude], {
+              rotation: captain.heading
+            })}
+          >
+            <SymbolLayer
+              id="captain-layer"
+              style={{
+                iconImage: 'cabMarker',
+                iconSize: 0.3,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
 
-{
-                captain?.latitude && (
-                      <Marker
-                          coordinate={{ latitude: captain.latitude, longitude: captain.longitude }}
-                          anchor={{ x: 0.5, y: 1 }}
-                          zIndex={3}
-                      >
-                          <View style={{transform: [{rotate: `${captain?.heading}deg`}]}}>
-                              <Image
-                                  source={require("@/assets/icons/cab_marker.png")}
-                                  style={{ height: 30, width: 30, resizeMode: "contain" }}
-                              />
-                          </View>
+        {/* Dibujar la ruta si se dispone de puntos */}
+                {/* directionCoordinate && <RoutesView directionCoordinate={directionCoordinate}/> */}
+      </Mapbox.MapView>
 
-                      </Marker>
-                ) 
-            }
-
-            {
-                drop && pickup && 
-                <Polyline
-                    coordinates={getPoints([drop, pickup])}
-                    strokeColor={Colors.text}
-                    strokeWidth={2}
-                    geodesic={true}
-                    lineDashPattern={[12, 10]}
-                />
-            }
-</MapView>
-
-    <TouchableOpacity style={mapStyles.gpsButton} onPress={fitToMarkers}>
-        <MaterialCommunityIcons name='crosshairs-gps' size={RFValue(16)} color="#3C75BE"/>
-    </TouchableOpacity>
-
-      
-      
+      <TouchableOpacity
+        style={mapStyles.gpsButton}
+        onPress={fitToMarkers}
+      >
+        <MaterialCommunityIcons
+          name="crosshairs-gps"
+          size={RFValue(16)}
+          color="#3C75BE"
+        />
+      </TouchableOpacity>
     </View>
+  );
+};
+
+export const RoutesView = ({directionCoordinate}: any) => {
+
+  return(
+
+    <ShapeSource id="route"
+                  lineMetrics
+                  shape={{
+                    properties: {},
+                    type: "Feature",
+                    geometry: {
+                      type: "LineString",
+                      coordinates: directionCoordinate
+                    }
+                  }}
+                  >
+                    <LineLayer
+                      id="route-layer"
+                      style={{
+                        lineColor: Colors.primary,
+                        lineCap: "round",
+                        lineJoin: "round",
+                        lineWidth: 2
+                      }}
+                    />
+                  </ShapeSource>
   )
 }
 
-export default memo(LiveTrackingMap)
+export default memo(LiveTrackingMap);

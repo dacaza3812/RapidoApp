@@ -196,6 +196,8 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
                 logoEnabled={false}
                 scaleBarEnabled={false}
                 onDidFinishLoadingMap={handleGpsButtonPress}
+                styleURL='mapbox://styles/mapbox/dark-v11'
+                attributionEnabled={false}
               >
                 <Camera
                   ref={cameraRef}

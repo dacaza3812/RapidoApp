@@ -1,7 +1,7 @@
 import { View, Text, Platform, StatusBar, Alert, ActivityIndicator } from 'react-native'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRoute } from '@react-navigation/native'
-import { screenHeight } from '@/utils/Constants'
+import { Colors, screenHeight } from '@/utils/Constants'
 import { useWS } from '@/service/WSProvider'
 import { rideStyles } from '@/styles/rideStyles'
 import { resetAndNavigate } from '@/utils/Helpers'
@@ -33,40 +33,40 @@ const LiveRide = () => {
     setMapHeight(height)
   }, []);
 
- useEffect(() => {
-  if(id){
-    emit("subscribeRide", id)
-
-    on("rideData", (data) => {
-      setRideData(data)
-      if(data?.status === "SEARCHING_FOR_CAPTAIN"){
-        emit("searchCaptain", id)
-      }
-    })
-
-    on("rideUpdate", (data) => {
-      setRideData(data)
-    })
-
-    on("rideCanceled", (error) => {
-      resetAndNavigate("/customer/home")
-      Alert.alert("Viaje Cancelado", "Usted será redirigido a la pantalla de inicio")
-    })
-
-    on("error", (error) => {
-      resetAndNavigate("/customer/home")
-      Alert.alert("Ups....no encontramos choferes")
-    })
-  }
-
-  return () => {
-    off("rideData");
-    off("rideUpdate");
-    off("rideCanceled");
-    off("error");
-  };
-
- }, [id, emit, on, off])
+useEffect(() => {
+    if(id){
+      emit("subscribeRide", id)
+  
+      on("rideData", (data) => {
+        setRideData(data)
+        if(data?.status === "SEARCHING_FOR_CAPTAIN"){
+          emit("searchCaptain", id)
+        }
+      })
+  
+      on("rideUpdate", (data) => {
+        setRideData(data)
+      })
+  
+      on("rideCanceled", (data) => {
+        resetAndNavigate("/customer/home")
+        Alert.alert("Viaje Cancelado", "Usted será redirigido a la pantalla de inicio")
+      })
+  
+      on("error", (error) => {
+        resetAndNavigate("/customer/home")
+        Alert.alert("Ups....no encontramos choferes")
+      })
+    }
+  
+    return () => {
+      off("rideData");
+      off("rideUpdate");
+      off("rideCanceled");
+      off("error");
+    };
+  
+   }, [id, emit, on, off])
   
  useEffect(() => {
     if(rideData?.captain?._id){
@@ -80,6 +80,8 @@ const LiveRide = () => {
       off("captainLocationUpdate")
     }
  }, [rideData])
+
+
 
   return (
     <View style={rideStyles.container}>
@@ -112,7 +114,12 @@ const LiveRide = () => {
           ref={bottomSheetRef}
           index={1}
           handleIndicatorStyle={{
-            backgroundColor: "#ccc"
+            backgroundColor: Colors.text
+          }}
+          backgroundStyle={{
+            backgroundColor: Colors.secondBackground,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
           }}
           enableOverDrag={false}
           enableDynamicSizing={false}
