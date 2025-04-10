@@ -11,6 +11,7 @@ import { rideStyles } from '@/styles/rideStyles'
 import { updateRideStatus } from '@/service/rideService'
 import CaptainActionButton from '@/components/captain/CaptainActionButton'
 import OptInputModal from '@/components/captain/OptInputModal'
+import CaptainLiveTrackingMapbox from '@/components/captain/CaptainLiveTrackingMapbox'
 
 const CaptainLiveRide = () => {
   const [isOtpModalVisible, setOtpModalVisible] = useState(false)
@@ -75,9 +76,9 @@ const CaptainLiveRide = () => {
       });
 
       on("rideCanceled", (error) => {
-        console.log(error);
+        
+        Alert.alert("Viaje cancelado", "Se aplicarán cargos por cancelación al cliente")
         resetAndNavigate("/captain/home")
-        Alert.prompt("Viaje Cancelado")
       });
 
       on("rideUpdate", (data) => {
@@ -107,7 +108,7 @@ const CaptainLiveRide = () => {
 
       {
         rideData &&
-        <CaptainLiveTracking
+        <CaptainLiveTrackingMapbox
           status={rideData?.status}
           drop={{ latitude: parseFloat(rideData?.drop?.latitude), longitude: parseFloat(rideData?.drop?.longitude) }}
           pickup={{ latitude: parseFloat(rideData?.pickup?.latitude), longitude: parseFloat(rideData?.pickup?.longitude) }}

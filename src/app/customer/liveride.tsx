@@ -49,8 +49,8 @@ useEffect(() => {
       })
   
       on("rideCanceled", (data) => {
+        Alert.alert("Viaje cancelado", "Se aplicarán cargos por cancelación")
         resetAndNavigate("/customer/home")
-        Alert.alert("Viaje Cancelado", "Usted será redirigido a la pantalla de inicio")
       })
   
       on("error", (error) => {
