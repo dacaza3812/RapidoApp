@@ -1,5 +1,5 @@
-import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native'
-import React, { FC } from 'react'
+import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Modal, Pressable } from 'react-native'
+import React, { FC, useState } from 'react'
 import { useWS } from '@/service/WSProvider';
 import { rideStyles } from '@/styles/rideStyles';
 import { commonStyles } from '@/styles/commonStyles';
@@ -8,6 +8,8 @@ import CustomText from '../shared/CustomText';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Colors } from '@/utils/Constants';
+import { resetAndNavigate } from '@/utils/Helpers';
+import ReusableModal from '../shared/CustomAlert';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
@@ -22,26 +24,35 @@ interface RideItem {
 
 const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
   const {emit} = useWS()
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const handleCancel = () => {
-    Alert.alert(
-      "Cancelar Viaje",
-      "¿Realmente desea cancelar el viaje?",
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Sí",
-          onPress: () => {
-            emit("cancelRide", item._id); // Notificar al servidor
-          }
-        }
-      ]
-    );
+  const handleCancelRoad = () => {
+      setModalVisible(false);
+      emit("cancelRide", item?._id)
+      resetAndNavigate("/customer/home")
+    }
+
+    const mainText =
+    item?.status === "SEARCHING_FOR_CAPTAIN"
+      ? "¿Cancelar el viaje?"
+      : "Al cancelar un viaje incurres en gastos para el chofer, en próximas versiones se aplicarán cargos por cancelación";
+  const descriptionText = "Deseas realmente cancelar el viaje";
+
+  const closeModal = () => {
+    setModalVisible(false);
   };
-  
 
   return (
     <View>
+      <ReusableModal
+        visible={modalVisible}
+        mainText={mainText}
+        descriptionText={descriptionText}
+        leftButtonText="Cancelar Viaje"
+        rightButtonText="Cancelar"
+        onLeftButtonPress={handleCancelRoad}
+        onRightButtonPress={closeModal}
+      />
       <View style={rideStyles?.headerContainer}>
         <View style={commonStyles.flexRowBetween}>
         {item?.vehicle && (
@@ -108,8 +119,8 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
       <View style={rideStyles?.bottomButtonContainer}>
       <TouchableOpacity 
         style={rideStyles.cancelButton} 
-        onPress={handleCancel}
-        disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
+        onPress={() => setModalVisible(true)}
+        // disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
       >
         <CustomText style={rideStyles?.cancelButtonText}>
           Cancelar
@@ -134,3 +145,40 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
 }
 
 export default SearchingRideSheet
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  dialog: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    height: 150,
+  },
+  dialogText: {
+    fontSize: 10,
+    marginBottom: 10,
+    textAlign: 'center'
+  },
+  dialogTextDescription: {
+    fontSize: 10,
+    marginBottom: 25,
+    textAlign: 'center'
+  }
+});

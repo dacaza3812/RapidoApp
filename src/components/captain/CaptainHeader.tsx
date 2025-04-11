@@ -66,6 +66,7 @@ const CaptainHeader = () => {
                 </TouchableOpacity>
 
                 <MaterialIcons name='notifications' size={24} color="white" />
+                
             </View>
         </View>
 

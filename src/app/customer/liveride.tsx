@@ -1,4 +1,4 @@
-import { View, Text, Platform, StatusBar, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, Platform, StatusBar, Alert, ActivityIndicator, Modal, Pressable, StyleSheet, Linking } from 'react-native'
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRoute } from '@react-navigation/native'
 import { Colors, screenHeight } from '@/utils/Constants'
@@ -9,6 +9,8 @@ import LiveTrackingMap from '@/components/customer/LiveTrackingMap'
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import SearchingRideSheet from '@/components/customer/SearchingRideSheet'
 import LiveTrackingSheet from '@/components/customer/LiveTrackingSheet'
+import { MaterialIcons } from '@expo/vector-icons'
+import { authStyles } from '@/styles/authStyles'
 
 const androidHeights = [screenHeight * 0.12, screenHeight * 0.42,]
 const ioseights = [screenHeight * 0.2, screenHeight *0.5,]
@@ -17,6 +19,7 @@ const LiveRide = () => {
   const {emit, on, off} = useWS()
   const [rideData, setRideData] = useState<any>(null)
   const [captainCoords, setCaptainCoords] = useState<any>(null)
+  
   const route = useRoute() as any;
   const params = route?.params || {}
   const id = params.id;
@@ -49,8 +52,9 @@ useEffect(() => {
       })
   
       on("rideCanceled", (data) => {
-        Alert.alert("Viaje cancelado", "Se aplicarán cargos por cancelación")
+        Alert.alert("Viaje cancelado por el chofer", "En próximas versiones se aplicarán cargos por cancelación")
         resetAndNavigate("/customer/home")
+        
       })
   
       on("error", (error) => {
@@ -90,6 +94,8 @@ useEffect(() => {
         backgroundColor="#176fb0"
         translucent={false}
       />
+
+
       {
         rideData &&
         <LiveTrackingMap
@@ -146,3 +152,4 @@ useEffect(() => {
 }
 
 export default memo(LiveRide)
+

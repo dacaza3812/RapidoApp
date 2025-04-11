@@ -11,7 +11,7 @@ import cabMarkerIcon from '@/assets/icons/cab_marker.png';
 import { Direction } from '@/utils/types';
 import { RoutesView } from '../customer/LiveTrackingMap';
 import { Colors } from '@/utils/Constants';
-import { getRoute } from '@/utils/mapUtils';
+import { getRoute, useGetRoute } from '@/utils/mapUtils';
 import { mapStyles } from '@/styles/mapStyles';
 import { useWS } from '@/service/WSProvider';
 
@@ -27,10 +27,8 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
   const cameraRef = useRef<Camera>(null);
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
   const [destiny, setDestiny] = useState<[number, number] | null>(null);
-  const [route, setRoute] = useState<Direction | null>(null);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
-
-
+  const { duration, coordinates} = useGetRoute(currentLocation || [0, 0], destiny || [0, 0]);
 
   useEffect(() => {
     Mapbox.setAccessToken(apikey);
@@ -47,12 +45,6 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
     }
   };
 
-  // Se invoca la navegación usando las coordenadas del "captain" como punto de partida
-  useEffect(() => {
-    if (captain?.latitude && destiny) {
-      onNavigate();
-    }
-  }, [captain, destiny, status]);
 
   useEffect(() => {
     if (status === 'START' && pickup?.latitude) {
@@ -63,18 +55,7 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
     fitToMarkers()
   }, [status, pickup, drop]);
 
-  const onNavigate = async () => {
-    if (!captain || !destiny) return;
-
-    try {
-      // Se utiliza la ubicación del "captain" para iniciar la ruta
-      const startPoint: [number, number] = [captain.longitude, captain.latitude];
-      const routes = await getRoute(startPoint, destiny);
-      setRoute(routes);
-    } catch (error) {
-      console.error('Error getting route:', error);
-    }
-  };
+  
 
   const fitToMarkers = async () => {
     if (isUserInteracting) return;
@@ -109,6 +90,15 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
     });
   };
 
+  const calculateCenter = () => {
+    if (pickup?.latitude && drop?.latitude) {
+      return [
+        (pickup.longitude + drop.longitude) / 2,
+        (pickup.latitude + drop.latitude) / 2
+      ];
+    }
+    return [pickup?.longitude || 0, pickup?.latitude || 0];
+  };
  
 
   return (
@@ -127,43 +117,48 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
           images={{
             marker: markerIcon,
             dropMarker: dropMarkerIcon,
-            cabMarker: cabMarkerIcon,
+            cabMarker: cabMarkerIcon
           }}
         />
 
         <Camera
           ref={cameraRef}
-          defaultSettings={{
-            // Se centra la cámara en la ubicación del "captain" si existe, o en la ubicación del dispositivo
-            centerCoordinate: captain
-              ? [captain.longitude, captain.latitude]
-              : currentLocation || [0, 0],
-            zoomLevel: 14,
-          }}
+          centerCoordinate={calculateCenter()}
+          zoomLevel={14}
+          animationMode="flyTo"
+          followUserLocation={true}
+          followZoomLevel={14}
+          followPitch={0}
         />
 
         {/* Marcadores */}
         {pickup?.latitude && (
-          <ShapeSource id="pickup" shape={point([pickup.longitude, pickup.latitude])}>
+          <ShapeSource
+            id="pickup"
+            shape={point([pickup.longitude, pickup.latitude])}
+          >
             <SymbolLayer
               id="pickup-layer"
               style={{
                 iconImage: 'marker',
                 iconSize: 0.5,
-                iconAnchor: 'bottom',
+                iconAnchor: 'bottom'
               }}
             />
           </ShapeSource>
         )}
 
         {drop?.latitude && (
-          <ShapeSource id="drop" shape={point([drop.longitude, drop.latitude])}>
+          <ShapeSource
+            id="drop"
+            shape={point([drop.longitude, drop.latitude])}
+          >
             <SymbolLayer
               id="drop-layer"
               style={{
                 iconImage: 'dropMarker',
                 iconSize: 0.5,
-                iconAnchor: 'bottom',
+                iconAnchor: 'bottom'
               }}
             />
           </ShapeSource>
@@ -172,7 +167,9 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
         {captain?.latitude && (
           <ShapeSource
             id="captain"
-            shape={point([captain.longitude, captain.latitude], { rotation: captain.heading })}
+            shape={point([captain.longitude, captain.latitude], {
+              rotation: captain.heading
+            })}
           >
             <SymbolLayer
               id="captain-layer"
@@ -180,15 +177,15 @@ const CaptainLiveTrackingMapbox: FC<{ drop: any; pickup: any; captain: any; stat
                 iconImage: 'cabMarker',
                 iconSize: 0.3,
                 iconAnchor: 'bottom',
-                iconRotate: ['get', 'rotation'],
+                iconRotate: ['get', 'rotation']
               }}
             />
           </ShapeSource>
         )}
 
         {/* Ruta */}
-        {route?.routes[0]?.geometry?.coordinates && (
-          <RoutesView directionCoordinate={route.routes[0].geometry.coordinates} />
+        {coordinates && (
+          <RoutesView directionCoordinate={coordinates} />
         )}
       </Mapbox.MapView>
 

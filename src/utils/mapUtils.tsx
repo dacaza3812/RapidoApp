@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useUserStore } from "@/store/userStore";
-import { type calculateDistance  as calculateDistanceType} from "./types";
+import { MapBox, type calculateDistance  as calculateDistanceType} from "./types";
+import { useEffect, useState } from "react";
 const apikey = process.env.EXPO_PUBLIC_MAPBOX_API_KEY || "sk.eyJ1IjoiZGFjYXphIiwiYSI6ImNtNmpjMmhmajBobWoya3ByNGhlMnZlZWgifQ.QJmQ4pkf78lHlqTFIUCXTQ"
 
 export const getLatLong = async (placeId: string, description: string) => {
@@ -185,7 +186,41 @@ export const vehicleIcons: Record<'bike' | 'auto' | 'cabEconomy' | 'cabPremium',
   };
 
   export const getRoute = async(origin: any[], dest: any[]) => {
-    console.log("origin" ,origin)
     const res = await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${origin[0]}, ${origin[1]}; ${dest[0]}, ${dest[1]}?alternatives=false&annotations=distance%2Cduration&geometries=geojson&overview=full&steps=false&access_token=pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A`);
     return await res.json()
   }
+
+  export const useGetRoute = (origin: number[], dest: number[]) => {
+    const [route, setRoute] = useState<MapBox | null>(null);
+    const [distance, setDistance] = useState<number | null>(null);
+    const [duration, setDuration] = useState<number | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<Error | null>(null);
+    const [coordinates, setCoordinates] = useState<number[][] | null>(null); // Almacena las coordenadas de la ruta
+
+    // route.routes[0].geometry.coordinates
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const data = await getRoute(origin, dest);
+                setRoute(data);
+                setDistance(parseFloat((data.routes[0].distance / 1000).toFixed(2))); // Convertir a km
+                setDuration(parseFloat((data.routes[0].duration / 60).toFixed(2))); // Convertir a minutos
+                setCoordinates(data.routes[0].geometry.coordinates); // Almacenar las coordenadas de la ruta
+                setError(null);
+            } catch (err) {
+                setError(err as Error);
+                setRoute(null);
+                setDistance(null);
+                setDuration(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (origin && dest) fetchData();
+    }, [origin, dest]); // Dependencias: se ejecuta cuando cambian origen o destino
+
+    return { route, distance, duration, loading, error, coordinates };
+};

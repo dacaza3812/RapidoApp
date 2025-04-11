@@ -1,5 +1,5 @@
-import { View, Text, Image, TouchableOpacity, Alert } from 'react-native'
-import React, { FC, useEffect } from 'react'
+import { View, Text, Image, TouchableOpacity, Alert, Modal, Pressable, StyleSheet } from 'react-native'
+import React, { FC, useEffect, useState } from 'react'
 import { useWS } from '@/service/WSProvider';
 import { rideStyles } from '@/styles/rideStyles';
 import { commonStyles } from '@/styles/commonStyles';
@@ -8,6 +8,9 @@ import CustomText from '../shared/CustomText';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { resetAndNavigate } from '@/utils/Helpers';
 import { Link } from 'expo-router';
+import { authStyles } from '@/styles/authStyles';
+import { Colors } from '@/utils/Constants';
+import ReusableModal from '../shared/CustomAlert';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
@@ -23,6 +26,13 @@ interface RideItem {
 }
 
 const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  
+    const handleCancelRoad = () => {
+          setModalVisible(false);
+          emit("cancelRide", item?._id)
+          resetAndNavigate("/customer/home")
+        }
   
   useEffect(()=> {
     if(item?.status === "COMPLETED"){
@@ -33,6 +43,15 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
     }
   }, [item?.status])
 
+  const mainText =
+    item?.status === "SEARCHING_FOR_CAPTAIN"
+      ? "¿Cancelar el viaje?"
+      : "¿Deseas realmente suspender el viaje?";
+  const descriptionText = "En próximas versiones se aplicarán cargos por suspención de viajes";
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
   
 
   const { emit } = useWS()
@@ -40,6 +59,15 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
  
   return (
     <View>
+      <ReusableModal
+        visible={modalVisible}
+        mainText={mainText}
+        descriptionText={descriptionText}
+        leftButtonText="Suspender Viaje"
+        rightButtonText="Cancelar"
+        onLeftButtonPress={handleCancelRoad}
+        onRightButtonPress={closeModal}
+      />
       <View style={rideStyles?.headerContainer}>
         <View style={commonStyles.flexRowGap}>
           {
@@ -113,14 +141,9 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
       <View style={rideStyles.bottomButtonContainer}>
         <TouchableOpacity 
           style={rideStyles.cancelButton} 
-          onPress={() => { 
-            
-              Alert.alert("Acción no permitida", "No puedes cancelar este viaje en este estado.");
-            
-            emit("cancelRide", item?._id)
-          }}
+          onPress={() => setModalVisible(true)}
         >
-          <CustomText style={rideStyles.backButtonText}>
+          <CustomText style={rideStyles?.cancelButtonText}>
             Cancelar
           </CustomText>
         </TouchableOpacity>
@@ -145,3 +168,40 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
 }
 
 export default LiveTrackingSheet
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  dialog: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    height: 150,
+  },
+  dialogText: {
+    fontSize: 10,
+    marginBottom: 10,
+    textAlign: 'center'
+  },
+  dialogTextDescription: {
+    fontSize: 10,
+    marginBottom: 25,
+    textAlign: 'center'
+  }
+});

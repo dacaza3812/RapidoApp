@@ -74,9 +74,7 @@ const Home = () => {
     }
   }, [onDuty, on, off, isFocused])
 
-  on("rideCanceled", (data) => {
-    console.log("Capitán recibido cancelación: ", data.message);
-  });
+  
 
   const removeRide = (id: string) => {
     setRideOffers((prevOffers) => prevOffers.filter((offer) => offer._id !== id));
@@ -92,7 +90,7 @@ const Home = () => {
     <View style={homeStyles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#176fb0" translucent={false}/>
       <CaptainHeader />
-
+    
       <FlatList
         data={!onDuty ? [] : rideOffers}
         renderItem={renderRides}

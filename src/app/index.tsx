@@ -109,7 +109,7 @@ const Main = () => {
     if (loaded && !hasNavigated) {
       const timeoutId = setTimeout(async () => {
 
-        const isUpdateRequired = false // await checkVersion();
+        const isUpdateRequired = await checkVersion();
         if (!isUpdateRequired && !errorMessage) {
           await tokenCheck();
           setHasNavigated(true);
