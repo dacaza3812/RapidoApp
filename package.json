@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@firebase/analytics": "^0.10.12",
     "@gorhom/bottom-sheet": "^5.0.6",
     "@mapbox/polyline": "^1.2.1",
     "@react-native-firebase/analytics": "^21.14.0",
@@ -66,6 +67,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/firebase": "^2.4.32",
     "@types/jest": "^29.5.12",
     "@types/mapbox__polyline": "^1.0.5",
     "@types/react": "~18.3.12",
