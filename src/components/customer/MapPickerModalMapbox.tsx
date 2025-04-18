@@ -10,6 +10,7 @@ import * as Location from "expo-location";
 import LocationItem from './LocationItem';
 import { tunasIntialRegion } from '@/utils/CustomMap';
 import { mapStyles } from '@/styles/mapStyles';
+import { customEvent, onCustomScreenView } from '@/lib/events';
 
 // Configurar Mapbox (reemplaza con tu access token)
 Mapbox.setAccessToken('pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A');
@@ -135,9 +136,39 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
     }
   };
 
+useEffect(() => {
+    const logScreenView = async () => {
+      await onCustomScreenView("MapPickerModalMapbox", "Customer")
+    };
 
+    logScreenView();
+  }, []);
 
+const handleSubmitAddress = async () => {
+  try {
+    await customEvent({
+      eventName: "address_selected",
+      payload: {
+        address: address,
+        latitude: region?.latitude,
+        longitude: region?.longitude,
+        type: title,
+      },
+    })
 
+    onSelectLocation({
+      type: title,
+      latitude: region?.latitude,
+      longitude: region?.longitude,
+      address: address
+    });
+    onClose();
+  } catch (error) {
+    console.log("Error al enviar la dirección:", error);
+    
+  }
+  
+}
   return (
     <Modal
       animationType='slide'
@@ -228,15 +259,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
               </Text>
               <View style={modalStyles.buttonContainer}>
                 <TouchableOpacity style={modalStyles.button}
-                  onPress={() => {
-                    onSelectLocation({
-                      type: title,
-                      latitude: region?.latitude,
-                      longitude: region?.longitude,
-                      address: address
-                    });
-                    onClose();
-                  }}
+                  onPress={() => handleSubmitAddress()}
                 >
                   <Text style={modalStyles.buttonText}>
                     Establecer Dirección

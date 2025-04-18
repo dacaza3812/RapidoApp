@@ -20,6 +20,7 @@ import markerIcon from '@/assets/icons/marker.png';
 import dropMarkerIcon from '@/assets/icons/drop_marker.png';
 import { Direction } from '@/utils/types';
 import { RoutesView } from './LiveTrackingMap';
+import { onCustomScreenView } from '@/lib/events';
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_API_KEY || '');
 
@@ -101,6 +102,14 @@ const RoutesMap: FC<RoutesMapProps> = ({ drop, pickup }) => {
       routeFeature = lineString(routeCoords);
     }
   }
+
+  useEffect(() => {
+      const logScreenView = async () => {
+        await onCustomScreenView("RoutesMap", "Customer")
+      };
+  
+      logScreenView();
+    }, []);
 
   const onNavigate = async () => {
       const route = await getRoute([pickup.longitude, pickup.latitude], [drop.longitude, drop.latitude])

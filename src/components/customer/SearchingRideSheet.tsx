@@ -1,5 +1,5 @@
 import { View, Text, Image, ActivityIndicator, TouchableOpacity, Alert, StyleSheet, Modal, Pressable } from 'react-native'
-import React, { FC, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { useWS } from '@/service/WSProvider';
 import { rideStyles } from '@/styles/rideStyles';
 import { commonStyles } from '@/styles/commonStyles';
@@ -10,29 +10,31 @@ import { router } from 'expo-router';
 import { Colors } from '@/utils/Constants';
 import { resetAndNavigate } from '@/utils/Helpers';
 import ReusableModal from '../shared/CustomAlert';
+import { customEvent } from '@/lib/events';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
 interface RideItem {
   vehicle?: VehicleType;
   _id: string,
-  pickup?: {address: string};
-  drop?: {address: string};
+  pickup?: { address: string };
+  drop?: { address: string };
   fare?: number;
   status?: string
 }
 
-const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
-  const {emit} = useWS()
+const SearchingRideSheet: FC<{ item: RideItem }> = ({ item }) => {
+  const { emit } = useWS()
   const [modalVisible, setModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCancelRoad = () => {
-      setModalVisible(false);
-      emit("cancelRide", item?._id)
-      resetAndNavigate("/customer/home")
-    }
+    setModalVisible(false);
+    emit("cancelRide", item?._id)
+    resetAndNavigate("/customer/home")
+  }
 
-    const mainText =
+  const mainText =
     item?.status === "SEARCHING_FOR_CAPTAIN"
       ? "¿Cancelar el viaje?"
       : "Al cancelar un viaje incurres en gastos para el chofer, en próximas versiones se aplicarán cargos por cancelación";
@@ -41,6 +43,35 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
   const closeModal = () => {
     setModalVisible(false);
   };
+
+
+  const handleBackRide = async () => {
+    if (!item._id) {
+      Alert.alert("Error", "Identificador de viaje inválido.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await customEvent({
+        eventName: "change_ride_type",
+        payload: {
+          rideId: item._id,
+          status: item.status!,
+        },
+      });
+      // Notificamos al servidor que cancelamos
+      emit("cancelRide", item._id);
+      // Volvemos atrás solo si todo fue exitoso
+      router.back();
+    } catch (error) {
+      console.error("Error al regresar ride:", error);
+      Alert.alert("Oops", "No fue posible regresar al paso anterior.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
     <View>
@@ -55,52 +86,52 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
       />
       <View style={rideStyles?.headerContainer}>
         <View style={commonStyles.flexRowBetween}>
-        {item?.vehicle && (
-          <Image
-            source={vehicleIcons[item.vehicle]?.icon}
-            style={rideStyles?.rideIcon}
-          />
-        )}
-        <View>
-          <CustomText fontSize={10}>Buscando para ti</CustomText>
-          <CustomText fontFamily='Medium' fontSize={12}>Viaje en {item?.vehicle === "bike" ? "Motocicleta" : item?.vehicle === "auto" ? "Triciclo" : item?.vehicle === "cabEconomy" ? "Auto Económico" : item?.vehicle === "cabPremium" ? "Auto Premium" : item?.vehicle}</CustomText>
-        </View>
+          {item?.vehicle && (
+            <Image
+              source={vehicleIcons[item.vehicle]?.icon}
+              style={rideStyles?.rideIcon}
+            />
+          )}
+          <View>
+            <CustomText fontSize={10}>Buscando para ti</CustomText>
+            <CustomText fontFamily='Medium' fontSize={12}>Viaje en {item?.vehicle === "bike" ? "Motocicleta" : item?.vehicle === "auto" ? "Triciclo" : item?.vehicle === "cabEconomy" ? "Auto Económico" : item?.vehicle === "cabPremium" ? "Auto Premium" : item?.vehicle}</CustomText>
+          </View>
         </View>
 
         <ActivityIndicator
-        color={Colors.text}
-        size="small"
-      />
+          color={Colors.text}
+          size="small"
+        />
       </View>
-      
 
-      <View style={{padding: 10}}>
+
+      <View style={{ padding: 10 }}>
         <CustomText fontFamily='Bold' fontSize={12}>
           Detalles de Ubicación
         </CustomText>
 
-        <View style={[commonStyles?.flexRowGap, {marginVertical:15, width: "90%"}]}>
-            <Image
-              source={require("@/assets/icons/marker.png")}
-              style={rideStyles?.pinIcon}
-            />
-            <CustomText fontSize={10} numberOfLines={2}>
-              {item?.pickup?.address}
-            </CustomText>
+        <View style={[commonStyles?.flexRowGap, { marginVertical: 15, width: "90%" }]}>
+          <Image
+            source={require("@/assets/icons/marker.png")}
+            style={rideStyles?.pinIcon}
+          />
+          <CustomText fontSize={10} numberOfLines={2}>
+            {item?.pickup?.address}
+          </CustomText>
         </View>
 
-        <View style={[commonStyles.flexRowGap, {width: "90%"}]}>
-          <Image source={require("@/assets/icons/drop_marker.png")} style={rideStyles.pinIcon}/>
+        <View style={[commonStyles.flexRowGap, { width: "90%" }]}>
+          <Image source={require("@/assets/icons/drop_marker.png")} style={rideStyles.pinIcon} />
           <CustomText fontSize={10} numberOfLines={2}>
             {item?.drop?.address}
           </CustomText>
         </View>
 
-        <View style={{marginVertical: 20}}>
+        <View style={{ marginVertical: 20 }}>
           <View style={[commonStyles.flexRowBetween]}>
             <View style={[commonStyles.flexRow]}>
-              <MaterialCommunityIcons name='credit-card' size={24} color="black"/>
-              <CustomText style={{marginLeft: 10}} fontFamily='SemiBold' fontSize={12}>
+              <MaterialCommunityIcons name='credit-card' size={24} color="black" />
+              <CustomText style={{ marginLeft: 10 }} fontFamily='SemiBold' fontSize={12}>
                 Pago
               </CustomText>
             </View>
@@ -114,33 +145,35 @@ const SearchingRideSheet: FC<{item: RideItem}> = ({item}) => {
             Pagar en efectivo
           </CustomText>
         </View>
-      </View> 
+      </View>
 
       <View style={rideStyles?.bottomButtonContainer}>
-      <TouchableOpacity 
-        style={rideStyles.cancelButton} 
-        onPress={() => setModalVisible(true)}
+        <TouchableOpacity
+          style={rideStyles.cancelButton}
+          onPress={() => setModalVisible(true)}
         // disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
-      >
-        <CustomText style={rideStyles?.cancelButtonText}>
-          Cancelar
-        </CustomText>
-      </TouchableOpacity>
-      
-      {/* Botón "Atrás" deshabilitado si el viaje ya comenzó */}
-      <TouchableOpacity 
-        style={rideStyles.backButton2} 
-        onPress={() => router.back()}
-        disabled={item.status !== "SEARCHING_FOR_CAPTAIN"}
-      >
-        <CustomText style={rideStyles?.backButtonText}>
-          Atrás
-        </CustomText>
-      </TouchableOpacity>
+        >
+          <CustomText style={rideStyles?.cancelButtonText}>
+            Cancelar
+          </CustomText>
+        </TouchableOpacity>
+
+        {/* Botón "Atrás" deshabilitado si el viaje ya comenzó */}
+        
+
+        <TouchableOpacity
+        style={rideStyles.backButton2}
+          onPress={handleBackRide}
+          disabled={isLoading || item.status !== "SEARCHING_FOR_CAPTAIN"}
+        >
+          {isLoading
+            ? <ActivityIndicator size="small" color="#fff" />
+            : <CustomText style={rideStyles?.backButtonText}>Atrás</CustomText>}
+        </TouchableOpacity>
+      </View>
+
     </View>
 
-      </View>
-    
   )
 }
 

@@ -11,6 +11,7 @@ import { Link } from 'expo-router';
 import { authStyles } from '@/styles/authStyles';
 import { Colors } from '@/utils/Constants';
 import ReusableModal from '../shared/CustomAlert';
+import { customEvent, onAppCompleteRideAndBeginCheckout, onCustomScreenView } from '@/lib/events';
 
 type VehicleType = "bike" | "auto" | "cabEconomy" | "cabPremium"
 
@@ -27,21 +28,62 @@ interface RideItem {
 
 const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
   const [modalVisible, setModalVisible] = useState(false);
-  
-    const handleCancelRoad = () => {
-          setModalVisible(false);
-          emit("cancelRide", item?._id)
-          resetAndNavigate("/customer/home")
+
+  const handleCancelRoad = () => {
+    setModalVisible(false);
+    emit("cancelRide", item?._id)
+    resetAndNavigate("/customer/home")
+  }
+
+  useEffect(() => {
+    const logScreenView = async () => {
+      await onCustomScreenView("LiveTrackingSheet", "Customer")
+    };
+
+    logScreenView();
+  }, []);
+
+  useEffect(() => {
+    if (item?.status === "COMPLETED") {
+      (async () => {
+        try {
+          console.log("Registrado proceso de pago");
+          if (item.fare && item.fare > 0) {
+            await onAppCompleteRideAndBeginCheckout({
+              coupon: "10%",
+              value: item.fare,
+              items: [{
+                id: item._id,
+                itemName: "Viaje",
+                price: item.fare,
+                vehicle: item.vehicle ?? "",
+                pickup: item.pickup?.address ?? "",
+                drop: item.drop?.address ?? "",
+                captain: item.captain,
+              }]
+            });
+            await customEvent({
+              eventName: "data_ride",
+              payload: {
+                rideId: item._id,
+                status: item.status,
+                fare: item.fare,
+                vehicle: item.vehicle,
+                pickup: item.pickup?.address,
+                drop: item.drop?.address,
+                captain: item.captain,
+              }
+            })
+          }
+        } catch (error) {
+          console.log("Error en checkout:", error);
+        } finally {
+          Alert.alert("Viaje Completado", "Usted será redirigido a la vista principal");
+          resetAndNavigate("/customer/home");
         }
-  
-  useEffect(()=> {
-    if(item?.status === "COMPLETED"){
-     
-      Alert.alert("Viaje Completado", "Usted será redirigido a la vista principal");
-      resetAndNavigate("/customer/home")
-      return
+      })();
     }
-  }, [item?.status])
+  }, [item?.status]);
 
   const mainText =
     item?.status === "SEARCHING_FOR_CAPTAIN"
@@ -52,11 +94,11 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
   const closeModal = () => {
     setModalVisible(false);
   };
-  
+
 
   const { emit } = useWS()
-  
- 
+
+
   return (
     <View>
       <ReusableModal
@@ -93,7 +135,7 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
         </View>
 
         <CustomText fontSize={11} numberOfLines={1} fontFamily='Medium'>
-          <Link style={{textDecorationLine: "underline"}} href={`tel:${item?.captain?.phone}`}>
+          <Link style={{ textDecorationLine: "underline" }} href={`tel:${item?.captain?.phone}`}>
             +53 {item?.captain?.phone && item?.captain?.phone?.slice(0, 5) + " " + item?.captain?.phone?.slice(5)}
           </Link>
         </CustomText>
@@ -139,8 +181,8 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
       </View>
 
       <View style={rideStyles.bottomButtonContainer}>
-        <TouchableOpacity 
-          style={rideStyles.cancelButton} 
+        <TouchableOpacity
+          style={rideStyles.cancelButton}
           onPress={() => setModalVisible(true)}
         >
           <CustomText style={rideStyles?.cancelButtonText}>
@@ -148,10 +190,10 @@ const LiveTrackingSheet: FC<{ item: RideItem }> = ({ item }) => {
           </CustomText>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={rideStyles.backButton2} 
+        <TouchableOpacity
+          style={rideStyles.backButton2}
           onPress={() => {
-            if(item?.status !== "START"){
+            if (item?.status !== "START") {
               Alert.alert("Acción no permitida", "No puedes ir atrás en este estado.");
               return;
             }

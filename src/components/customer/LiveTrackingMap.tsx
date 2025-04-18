@@ -18,6 +18,7 @@ import markerIcon from '@/assets/icons/marker.png';
 import dropMarkerIcon from '@/assets/icons/drop_marker.png';
 import cabMarkerIcon from '@/assets/icons/cab_marker.png';
 import { Direction } from '@/utils/types';
+import { onCustomScreenView } from '@/lib/events';
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_API_KEY || '');
 
@@ -90,13 +91,20 @@ const LiveTrackingMap: FC<{
     }
   }, [drop, pickup, captain]);
 
-  
-const onNavigate = async () => {
-      const routes = await getRoute([pickup.longitude, pickup.latitude], [drop.longitude, drop.latitude])
-      setRoute(routes)
-    }
 
-    const directionCoordinate = route?.routes[0].geometry.coordinates
+  const onNavigate = async () => {
+    const routes = await getRoute([pickup.longitude, pickup.latitude], [drop.longitude, drop.latitude])
+    setRoute(routes)
+  }
+
+  const directionCoordinate = route?.routes[0].geometry.coordinates
+  useEffect(() => {
+    const logScreenView = async () => {
+      await onCustomScreenView("LiveTrackingMap", "Customer")
+    };
+
+    logScreenView();
+  }, []);
 
 
   return (
@@ -182,7 +190,7 @@ const onNavigate = async () => {
         )}
 
         {/* Dibujar la ruta si se dispone de puntos */}
-                {/* directionCoordinate && <RoutesView directionCoordinate={directionCoordinate}/> */}
+        {/* directionCoordinate && <RoutesView directionCoordinate={directionCoordinate}/> */}
       </Mapbox.MapView>
 
       <TouchableOpacity
@@ -199,31 +207,31 @@ const onNavigate = async () => {
   );
 };
 
-export const RoutesView = ({directionCoordinate}: any) => {
+export const RoutesView = ({ directionCoordinate }: any) => {
 
-  return(
+  return (
 
     <ShapeSource id="route"
-                  lineMetrics
-                  shape={{
-                    properties: {},
-                    type: "Feature",
-                    geometry: {
-                      type: "LineString",
-                      coordinates: directionCoordinate
-                    }
-                  }}
-                  >
-                    <LineLayer
-                      id="route-layer"
-                      style={{
-                        lineColor: Colors.primary,
-                        lineCap: "round",
-                        lineJoin: "round",
-                        lineWidth: 2
-                      }}
-                    />
-                  </ShapeSource>
+      lineMetrics
+      shape={{
+        properties: {},
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: directionCoordinate
+        }
+      }}
+    >
+      <LineLayer
+        id="route-layer"
+        style={{
+          lineColor: Colors.primary,
+          lineCap: "round",
+          lineJoin: "round",
+          lineWidth: 2
+        }}
+      />
+    </ShapeSource>
   )
 }
 

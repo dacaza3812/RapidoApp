@@ -11,6 +11,8 @@ import { BASE_URL } from '@/service/config';
 import { Banners } from '@/utils/types';
 import { useUserStore } from '@/store/userStore';
 import { Colors } from '@/utils/Constants';
+import { useBannersByCity } from '@/service/useBannersByCity';
+import { customEvent, onAppCompleteRideAndBeginCheckout, onSelectitem } from '@/lib/events';
 
 const cubes = [
   { name: "Moto", imageUri: require("@/assets/icons/bike.png") },
@@ -20,40 +22,13 @@ const cubes = [
   { name: "Auto Premium", imageUri: require("@/assets/icons/cab_premium.png") },
 ];
 
-const useBannersByCity = () => {
-  const [banners, setBanners] = useState<Banners[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const {location} = useUserStore()
 
-  const getBannersByCity = async () => {
-    
-    const strCity = location?.address || "";
-    const partesCity = strCity.split(/\s*,\s*/);
-    const city = partesCity[partesCity.length - 2];
-    setLoading(true);
-    try {
-      if (!city) return
-
-      const response = await axios.post(`${BASE_URL}/banner/by-city`, { cities: [city.toString()] });
-      setBanners(response.data.banners);
-    } catch (err) {
-      console.error("Error al obtener banners por ciudad:", err);
-      setError(err as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { banners, loading, error, location, getBannersByCity };
-};
 
 const SheetContent = () => {
-  const { banners, getBannersByCity, location } = useBannersByCity();
+  const { banners, getBannersByCity, location, provincy } = useBannersByCity();
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const { width: screenWidth } = Dimensions.get('window');
-
   useEffect(() => {
     getBannersByCity();
   }, [location]);
@@ -77,17 +52,74 @@ const SheetContent = () => {
     setCurrentBannerIndex(index);
   };
 
-  const handlePressBanner = (link: string) => {
+  const handlePressBanner = async (link: string) => {
     if (link) {
       Linking.openURL(link).catch((err) => console.error("Error al abrir el link:", err));
+      await customEvent({
+        eventName: "banner_click",
+        payload: {
+          link: link,
+          city: location?.address,
+          province: provincy,
+        },
+      })
     }
   };
+  type itemNavigation = {
+    name: string;
+    imageUri: any;
+  }
+  const handleNavigateCubes = async ( item : itemNavigation) => {
+    await customEvent({
+      eventName: "cubes_click",
+      payload: {
+        city: location?.address,
+        province: provincy,
+        item: item.name,
+        imageUri: item.imageUri,
+      },
+    })
+
+    await onAppCompleteRideAndBeginCheckout({
+      coupon: "10%",
+      value: 110,
+      items: [
+        {
+          id: item.name,
+          itemName: item.name,
+          price: 0,
+          vehicle: item.name,
+          pickup: location?.address ?? "",
+          drop: location?.address ?? "",
+          captain: null,
+        },
+      ],
+    })
+
+    await onSelectitem({
+      item: {
+        item_list_name: "cubes",
+        content_type: "Medio_de_transporte",
+        item_list_id: item.name,
+        items: [
+          {
+            item_name: item.name,
+            item_id: item.name,
+            item_brand: item.name,
+            item_category: item.name,
+          },
+        ]
+      }
+
+    })
+    router.navigate("/customer/selectlocations")
+  }
 
   return (
     <View style={{ height: "100%" }}>
       <TouchableOpacity style={uiStyles.searchBarContainer} onPress={() => router.navigate("/customer/selectlocations")}>
         <Ionicons name='search-outline' size={RFValue(16)} color={Colors.text} />
-        <CustomText fontFamily='Medium' fontSize={11} style={{color: Colors.text}}>¿A dónde quieres ir?</CustomText>
+        <CustomText fontFamily='Medium' fontSize={11} style={{ color: Colors.text }}>¿A dónde quieres ir?</CustomText>
       </TouchableOpacity>
 
       <View style={commonStyles.flexRowBetween}>
@@ -100,7 +132,7 @@ const SheetContent = () => {
 
       <View style={uiStyles.cubes}>
         {cubes?.slice(0, 4).map((item, index) => (
-          <TouchableOpacity key={index} style={uiStyles.cubeContainer} onPress={() => router.navigate("/customer/selectlocations")}>
+          <TouchableOpacity key={index} style={uiStyles.cubeContainer} onPress={() => handleNavigateCubes(item)}>
             <View style={uiStyles.cubeIconContainer}>
               <Image source={item?.imageUri} style={uiStyles.cubeIcon} />
             </View>

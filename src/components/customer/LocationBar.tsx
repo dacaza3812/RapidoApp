@@ -1,5 +1,5 @@
 import { View, Text, SafeAreaView, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useUserStore } from '@/store/userStore'
 import { useWS } from '@/service/WSProvider'
 import { uiStyles } from '@/styles/uiStyles'
@@ -9,10 +9,28 @@ import { Colors } from '@/utils/Constants'
 import { router } from 'expo-router'
 import CustomText from '../shared/CustomText'
 import { logout } from '@/service/authService'
+import { customEvent, onCustomScreenView } from '@/lib/events'
+import { useBannersByCity } from '@/service/useBannersByCity'
 
 const LocationBar = () => {
     const {location} = useUserStore()
     const {disconnect} = useWS()
+    const {provincy} = useBannersByCity()
+    useEffect(() => {
+        const logScreenView = async () => {
+          await onCustomScreenView("LiveRide", "Customer")
+          if(provincy) {
+            await customEvent({
+              eventName: "Location",
+              payload: {
+                provincy: provincy,
+              }
+            })
+          }
+        };
+    
+        logScreenView();
+      }, []);
   return (
     <View style={uiStyles.absoluteTop}>
       <SafeAreaView/>
