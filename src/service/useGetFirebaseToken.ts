@@ -1,8 +1,9 @@
 import { getApps, initializeApp } from "@react-native-firebase/app";
 import { getMessaging, getToken } from "@react-native-firebase/messaging";
+import analytics from '@react-native-firebase/analytics';
 import { useEffect, useState } from "react";
 
-const firebaseConfig = {
+export const firebaseConfig = {
     apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
     authDomain: "rapidoapp-4a547.firebaseapp.com",
     databaseURL: "https://rapidoapp-4a547-default-rtdb.firebaseio.com",
@@ -15,12 +16,15 @@ const firebaseConfig = {
 
 export default function useGetFirebaseToken(){
     const [firebasePushToken, setFirebasePushToken] = useState<string | null>(null);
+    const [firebaseAnalitics, setAnalitics] = useState<any>(null);
     const fetchToken = async () => {
         try {
             if (!getApps().length) {
                 initializeApp(firebaseConfig);
             }
             const messaging = getMessaging();
+            const service = analytics();
+            setAnalitics(service)
             const token = await getToken(messaging, { vapidKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0" });
             setFirebasePushToken(token);
         } catch (error) {
@@ -33,5 +37,5 @@ export default function useGetFirebaseToken(){
         fetchToken();
     }, []);
 
-    return {firebasePushToken}
+    return {firebasePushToken, firebaseAnalitics}
 }
