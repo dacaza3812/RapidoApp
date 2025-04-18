@@ -11,6 +11,8 @@ import { signin } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
 import useGetFirebaseToken from '@/service/useGetFirebaseToken'
 import * as Linking from 'expo-linking';
+import { onUserLogin } from '@/lib/events'
+import { useUserStore } from '@/store/userStore'
 
 
 const Auth = () => {
@@ -18,29 +20,50 @@ const Auth = () => {
     const [phone, setPhone] = useState("")
     const [loading, setLoading] = useState(false)
     const {firebasePushToken} = useGetFirebaseToken()
+    const { user: customerUser } = useUserStore(); // Usuario cliente previo
 
-    const handleNext = async () => {
-        try {
-            setLoading(true)
-            if(!phone && phone.length !== 8){
-                Alert.alert("Bro....pon tu numero de cel")
-                return
+    const doSignin = async (forceSwitch: boolean) => {
+            try {
+              setLoading(true);
+        
+              if (!phone || phone.length !== 8) {
+                Alert.alert("Número requerido", "Por favor ingresa tu número de 8 dígitos");
+                return;
+              }
+        
+              await signin(
+                {
+                  role: "customer",
+                  phone,
+                  firebasePushToken,
+                  forceSwitch: true
+                },
+                updateAccessToken
+              );
+        
+              await onUserLogin(phone, "customer");
+            } catch (error) {
+              console.error("Error en autenticación:", error);
+              Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión");
+            } finally {
+              setLoading(false);
             }
-            await signin({
-                role: "customer",
-                phone,
-                firebasePushToken
-            }, updateAccessToken)
+          };
 
-        } catch (error) {
-            console.error("Error en autenticación:", error)
-            Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión")
-        } finally {
-            setLoading(false)
-        }
-
-       
-    }
+    const handleNext = () => {
+            if (customerUser && customerUser.role === "captain") {
+              Alert.alert(
+                "Cambiar a perfil Chofer",
+                "Vas a cambiar de cliente a chofer. ¿Deseas continuar?",
+                [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Continuar", onPress: () => doSignin(true) }, // forceSwitch: true
+                ]
+              );
+            } else {
+              doSignin(false);
+            }
+          };
 
   return (
     <SafeAreaView style={authStyles.container}>

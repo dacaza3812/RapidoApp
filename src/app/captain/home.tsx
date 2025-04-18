@@ -10,6 +10,7 @@ import { captainStyles } from '@/styles/captainStyles'
 import CustomText from '@/components/shared/CustomText'
 import * as Location from "expo-location"
 import CaptainRidesItem from '@/components/captain/CaptainRidesItem'
+import { onCustomScreenView } from '@/lib/events'
 
 const Home = () => {
 
@@ -22,6 +23,14 @@ const Home = () => {
   useEffect(() => {
     getMyRides(false)
   }, []) 
+
+  useEffect(() => {
+        const logScreenView = async () => {
+          await onCustomScreenView("Home", "Captain")
+        };
+      
+        logScreenView();
+      }, []);
   
   useEffect(() => {
     let locationsSubscription: any;

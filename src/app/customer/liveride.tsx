@@ -11,15 +11,16 @@ import SearchingRideSheet from '@/components/customer/SearchingRideSheet'
 import LiveTrackingSheet from '@/components/customer/LiveTrackingSheet'
 import { MaterialIcons } from '@expo/vector-icons'
 import { authStyles } from '@/styles/authStyles'
+import { onCustomScreenView } from '@/lib/events'
 
 const androidHeights = [screenHeight * 0.12, screenHeight * 0.42,]
-const ioseights = [screenHeight * 0.2, screenHeight *0.5,]
+const ioseights = [screenHeight * 0.2, screenHeight * 0.5,]
 
 const LiveRide = () => {
-  const {emit, on, off} = useWS()
+  const { emit, on, off } = useWS()
   const [rideData, setRideData] = useState<any>(null)
   const [captainCoords, setCaptainCoords] = useState<any>(null)
-  
+
   const route = useRoute() as any;
   const params = route?.params || {}
   const id = params.id;
@@ -30,62 +31,68 @@ const LiveRide = () => {
 
   const handleSheetChanges = useCallback((index: number) => {
     let height = screenHeight * 0.8
-    if(index == 1){
+    if (index == 1) {
       height = screenHeight * 0.5
     }
     setMapHeight(height)
   }, []);
 
-useEffect(() => {
-    if(id){
+  useEffect(() => {
+    if (id) {
       emit("subscribeRide", id)
-  
+
       on("rideData", (data) => {
         setRideData(data)
-        if(data?.status === "SEARCHING_FOR_CAPTAIN"){
+        if (data?.status === "SEARCHING_FOR_CAPTAIN") {
           emit("searchCaptain", id)
         }
       })
-  
+
       on("rideUpdate", (data) => {
         setRideData(data)
       })
-  
+
       on("rideCanceled", (data) => {
         Alert.alert("Viaje cancelado por el chofer", "En próximas versiones se aplicarán cargos por cancelación")
         resetAndNavigate("/customer/home")
-        
+
       })
-  
+
       on("error", (error) => {
         resetAndNavigate("/customer/home")
         Alert.alert("Ups....no encontramos choferes")
       })
     }
-  
+
     return () => {
       off("rideData");
       off("rideUpdate");
       off("rideCanceled");
       off("error");
     };
-  
-   }, [id, emit, on, off])
-  
- useEffect(() => {
-    if(rideData?.captain?._id){
+
+  }, [id, emit, on, off])
+
+  useEffect(() => {
+    if (rideData?.captain?._id) {
       emit("subscribeToCaptainLocation", rideData?.captain?._id)
       on("captainLocationUpdate", (data) => {
         setCaptainCoords(data?.coords);
       })
     }
 
-    return() => {
+    return () => {
       off("captainLocationUpdate")
     }
- }, [rideData])
+  }, [rideData])
 
+  useEffect(() => {
+    const logScreenView = async () => {
+      await onCustomScreenView("LiveRide", "Customer")
+    };
 
+    logScreenView();
+  }, []);
 
   return (
     <View style={rideStyles.container}>
@@ -101,8 +108,8 @@ useEffect(() => {
         <LiveTrackingMap
           height={mapHeight}
           status={rideData?.status}
-          drop={{latitude: parseFloat(rideData?.drop?.latitude), longitude: parseFloat(rideData?.drop?.longitude)}}
-          pickup={{latitude: parseFloat(rideData?.pickup?.latitude), longitude: parseFloat(rideData?.pickup?.longitude)}}
+          drop={{ latitude: parseFloat(rideData?.drop?.latitude), longitude: parseFloat(rideData?.drop?.longitude) }}
+          pickup={{ latitude: parseFloat(rideData?.pickup?.latitude), longitude: parseFloat(rideData?.pickup?.longitude) }}
           captain={
             captainCoords
               ? {
@@ -116,36 +123,36 @@ useEffect(() => {
       }
       {
         rideData ?
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={1}
-          handleIndicatorStyle={{
-            backgroundColor: Colors.text
-          }}
-          backgroundStyle={{
-            backgroundColor: Colors.secondBackground,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-          }}
-          enableOverDrag={false}
-          enableDynamicSizing={false}
-          style={{zIndex: 4}}
-          snapPoints={snapPoint}
-          onChange={handleSheetChanges}
-        >
-          <BottomSheetScrollView contentContainerStyle={rideStyles?.container}>
-            {
-              rideData?.status === "SEARCHING_FOR_CAPTAIN" ?
-                <SearchingRideSheet item={rideData}/>
-                :
-                <LiveTrackingSheet item={rideData} />
-            }
-          </BottomSheetScrollView>
-        </BottomSheet>
-        :
-        <View style={{flex: 1, justifyContent: "center", alignContent: "center"}}>
-          <ActivityIndicator color="black" size="small"/>
-        </View>
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={1}
+            handleIndicatorStyle={{
+              backgroundColor: Colors.text
+            }}
+            backgroundStyle={{
+              backgroundColor: Colors.secondBackground,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+            enableOverDrag={false}
+            enableDynamicSizing={false}
+            style={{ zIndex: 4 }}
+            snapPoints={snapPoint}
+            onChange={handleSheetChanges}
+          >
+            <BottomSheetScrollView contentContainerStyle={rideStyles?.container}>
+              {
+                rideData?.status === "SEARCHING_FOR_CAPTAIN" ?
+                  <SearchingRideSheet item={rideData} />
+                  :
+                  <LiveTrackingSheet item={rideData} />
+              }
+            </BottomSheetScrollView>
+          </BottomSheet>
+          :
+          <View style={{ flex: 1, justifyContent: "center", alignContent: "center" }}>
+            <ActivityIndicator color="black" size="small" />
+          </View>
       }
     </View>
   )

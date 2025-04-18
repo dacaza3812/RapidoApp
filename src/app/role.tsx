@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, Platform, Alert } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Platform, Alert, Button } from 'react-native'
 import React, { useEffect } from 'react'
 import { roleStyles } from '@/styles/roleStyles'
 import CustomText from '@/components/shared/CustomText'
@@ -8,6 +8,9 @@ import { initializeApp, getApps } from '@react-native-firebase/app';
 import * as Notifications from "expo-notifications";
 import { StatusBar } from 'expo-status-bar'
 import { Colors } from '@/utils/Constants'
+import { customEvent, onCustomScreenView } from '@/lib/events'
+import useGetFirebaseToken from '@/service/useGetFirebaseToken'
+import analytics from '@react-native-firebase/analytics';
 /*
 export const firebaseConfig = {
   apiKey: "AIzaSyBVWYHKgp_9b95zaFtVwI1ekS9XirOcBV0",
@@ -79,6 +82,15 @@ const Role = () => {
        // return () => unsubscribe();  
       }, []);
 */
+
+    useEffect(() => {
+      const logScreenView = async () => {
+        await onCustomScreenView("Role", "RoleScreen")
+      };
+    
+      logScreenView();
+    }, []);
+
   return (
     <View style={roleStyles.container}>
       <StatusBar translucent={false} backgroundColor={Colors.primary}/>

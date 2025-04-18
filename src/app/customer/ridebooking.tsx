@@ -14,6 +14,7 @@ import CustomButton from '@/components/shared/CustomButton';
 import RoutesMap from '@/components/customer/RoutesMap';
 import { createRide } from '@/service/rideService';
 import { Colors } from '@/utils/Constants';
+import { customEvent, onAddPaymentInfo } from '@/lib/events';
 
 const RideBooking = () => {
   const route = useRoute() as any;
@@ -24,6 +25,7 @@ const RideBooking = () => {
 
   // Calcula las tarifas basadas en la distancia
   const farePrices = useMemo(() => calculateFare(parseFloat(item?.distanceInKm)), [item?.distanceInKm]);
+  
 
   // Estado para el tiempo actual, se actualizará cada minuto
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -94,12 +96,24 @@ const RideBooking = () => {
     });
   }, [item?.distanceInKm, currentTime, farePrices]);
 
-  const handleOptionSelect = (type: string) => {
+  const handleOptionSelect = async (type: string) => {
     setSelectedOption(type);
+    await customEvent({
+      eventName: "ride_option_select",
+      payload: {
+        ride_type: type,
+        distance: item?.distanceInKm,
+        estimated_arrival_time: rideOptions.find((ride) => ride.type === type)?.time,
+        drop_time: rideOptions.find((ride) => ride.type === type)?.dropTime,
+        pickup_address: location?.address,
+        drop_address: item?.drop_address
+      }
+    })
   };
 
   const handleRideBooking = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
     await createRide({
       vehicle:
         selectedOption === "Auto Económico"
@@ -120,7 +134,22 @@ const RideBooking = () => {
         address: location.address
       }
     });
+    const fareKeyMap: Record<string, keyof typeof farePrices> = {
+      "Motocicleta": "bike",
+      "Triciclo": "auto",
+      "Auto Económico": "cabEconomy",
+      "Auto Premium": "cabPremium",
+    };
+
+    await onAddPaymentInfo({
+      paymentMethod: "Efectivo",
+      value: farePrices[fareKeyMap[selectedOption]],
+    });
     setLoading(false);
+    } catch (error) {
+      console.error("Error al crear el viaje:", error);
+      
+    }
   };
 
   return (
@@ -181,6 +210,7 @@ const RideBooking = () => {
 };
 
 const RideOption = React.memo(({ ride, selected, onSelect }: any) => (
+  
   <TouchableOpacity
     onPress={() => onSelect(ride?.type)}
     style={[rideStyles.rideOption, { borderColor: selected === ride.type ? Colors.text : Colors.background }]}

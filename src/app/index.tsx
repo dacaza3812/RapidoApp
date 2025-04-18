@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons'
 import { authStyles } from '@/styles/authStyles'
 import { Colors } from '@/utils/Constants'
 import { StatusBar } from 'expo-status-bar'
+import { onAppOpen, onCustomScreenView } from '@/lib/events'
 
 
 interface DecodedToken {
@@ -48,7 +49,8 @@ const Main = () => {
       const latestVersion = data.version.version;
       const currentVersion = Application.nativeApplicationVersion;
       console.log(currentVersion);
-
+      await onAppOpen()
+      await onCustomScreenView("Index", "Index")
       const isUpdateRequired = (latestVersion !== currentVersion);
       if (isUpdateRequired) {
         setDownloadUrl("https://www.apklis.cu/application/com.dacaza.rapido");
