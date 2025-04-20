@@ -155,7 +155,7 @@ const CaptainLiveRide = () => {
         <OptInputModal
           visible={isOtpModalVisible}
           onClose={() => setOtpModalVisible(false)}
-          title='Enter OTP Below'
+          title='Escriba el código OTP que posee su cliente'
           onConfirm={async (otp) => {
             if (otp === rideData?.otp) {
               const isSucces = await updateRideStatus(rideData?._id, "ARRIVED");

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity } from 'reac
 import React, { FC, memo, useRef, useState } from 'react'
 import { modalStyles } from '@/styles/modalStyles';
 import { Colors } from '@/utils/Constants';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 interface OptInputModalProps {
     visible: boolean;
@@ -65,6 +66,13 @@ const OptInputModal: FC<OptInputModalProps> = ({visible,onClose,onConfirm,title}
                     ))
                 }
             </View>
+            <Text style={{
+                    textAlign: 'center',
+                    fontWeight: "600",
+                    marginTop: 15,
+                    fontSize: RFValue(10),
+                    color: Colors.text
+                }}>Este código sirve para validar que realmente ha recogido al usuario</Text>
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
                 <Text style={styles.confirmButtonText}>Confirmar</Text>
             </TouchableOpacity>

@@ -159,6 +159,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
       console.log('Error sending address:', err);
     }
   };
+  
   return (
     <Modal
       animationType='slide'

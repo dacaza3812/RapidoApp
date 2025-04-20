@@ -44,7 +44,7 @@ export const modalStyles = StyleSheet.create({
         fontWeight: "600",
         marginTop: 15,
         fontSize: RFValue(13),
-        textTransform: 'capitalize',
+        textTransform: 'uppercase',
         color: Colors.text
     },
     cancelButton: {
