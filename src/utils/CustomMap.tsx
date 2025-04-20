@@ -54,8 +54,8 @@ export const customMapStyle = [
 ]
 
 export const tunasIntialRegion = {
-  latitude: 20.9626,
-  longitude: -76.9606,
+  latitude: 21.8955318,
+  longitude: -79.4665393,
   latitudeDelta: 0.5,
   longitudeDelta: 0.5,
 }

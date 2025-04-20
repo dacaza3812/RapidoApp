@@ -34,24 +34,14 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
   const { location } = useUserStore();
   const [address, setAddress] = useState("");
   const [region, setRegion] = useState<{ latitude: number, longitude: number } | null>(null);
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState<{ place_id: string; description: string }[]>([]);
   const textInputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState("");
   const [followUser, setFollowUser] = useState(false); // Add state to control follow behavior
 
-  const fetchLocation = async (query: string) => {
-    if (query?.length > 4) {
-      setQuery(query);
-      const data = await getPlacesSuggestions(query);
-      setLocations(data);
-    } else {
-      setLocations([]);
-    }
-  };
-
   useEffect(() => {
-    const loadInitialLocation = async () => {
-      if (selectedLocation?.latitude) {
+    (async () => {
+      if (selectedLocation.latitude) {
         setAddress(selectedLocation.address);
         setRegion({
           latitude: selectedLocation.latitude,
@@ -67,26 +57,62 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
           const loc = await Location.getCurrentPositionAsync({});
           const { latitude, longitude } = loc.coords;
           setRegion({ latitude, longitude });
-          setFollowUser(true); // Activar follow para que la cámara siga al usuario
+          setFollowUser(true);
           cameraRef.current?.setCamera({
             centerCoordinate: [longitude, latitude],
             zoomLevel: 16,
             animationDuration: 1000,
           });
-        } catch (error) {
-          console.log("Error al obtener ubicación inicial:", error);
+        } catch (err) {
+          console.warn('Error fetching location:', err);
         }
       }
-    }
-    loadInitialLocation();
+    })();
+  }, [selectedLocation]);
 
-  }, [selectedLocation]); // Este efecto ya inicializa la cámara correctamente
+  // Logging
+  useEffect(() => {
+    onCustomScreenView('MapPickerModalMapbox', 'Customer');
+  }, []);
+
+  // Region change guards
+  const handleRegionWillChange = () => {
+    if (followUser) {
+      setFollowUser(false);
+    }
+  };
+
+  const handleRegionDidChange = async (event: any) => {
+    if (followUser) return;  // Skip while following :contentReference[oaicite:2]{index=2}
+
+    const coords = event.geometry?.coordinates;
+    if (coords) {
+      const [longitude, latitude] = coords;
+      try {
+        const addr = await reverseGeocode(latitude, longitude);
+        setRegion({ latitude, longitude });
+        setAddress(addr);
+      } catch (err) {
+        console.log('Error reverse-geocoding:', err);
+      }
+    }
+  };
+
+  const fetchLocation = async (q: string) => {
+    if (q.length > 4) {
+      setQuery(q);
+      const data = await getPlacesSuggestions(q);
+      setLocations(data);
+    } else {
+      setLocations([]);
+    }
+  };
 
   const addLocation = async (place_id: string, description: string) => {
     const data = await getLatLong(place_id, description);
     if (data) {
-      setFollowUser(false); // Desactivar seguimiento
-      setRegion(data); // Actualizar región con los datos correctos
+      setFollowUser(false);
+      setRegion(data);
       setAddress(data.address);
       cameraRef.current?.setCamera({
         centerCoordinate: [data.longitude, data.latitude],
@@ -95,34 +121,14 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
       });
     }
     textInputRef.current?.blur();
-    setText("");
-  };
-
-  const renderLocations = ({ item }: any) => {
-    return (
-      <LocationItem item={item} onPress={() => addLocation(item?.place_id, item?.description)} />
-    );
-  };
-
-  const handleRegionDidChange = async (event: any) => {
-    const { geometry } = event;
-    if (geometry && geometry.coordinates) {
-      const [longitude, latitude] = geometry.coordinates;
-      try {
-        const addr = await reverseGeocode(latitude, longitude);
-        setRegion({ latitude, longitude });
-        setAddress(addr);
-      } catch (error) {
-        console.log("Error getting location", error);
-      }
-    }
+    setQuery('');
   };
 
   const handleGpsButtonPress = async () => {
     try {
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
-      setFollowUser(true); // Enable follow mode
+      setFollowUser(true);
       cameraRef.current?.setCamera({
         centerCoordinate: [longitude, latitude],
         zoomLevel: 16,
@@ -131,44 +137,28 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
       const addr = await reverseGeocode(latitude, longitude);
       setAddress(addr);
       setRegion({ latitude, longitude });
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     }
   };
 
-useEffect(() => {
-    const logScreenView = async () => {
-      await onCustomScreenView("MapPickerModalMapbox", "Customer")
-    };
-
-    logScreenView();
-  }, []);
-
-const handleSubmitAddress = async () => {
-  try {
-    await customEvent({
-      eventName: "address_selected",
-      payload: {
-        address: address,
-        latitude: region?.latitude,
-        longitude: region?.longitude,
-        type: title,
-      },
-    })
-
-    onSelectLocation({
-      type: title,
-      latitude: region?.latitude,
-      longitude: region?.longitude,
-      address: address
-    });
-    onClose();
-  } catch (error) {
-    console.log("Error al enviar la dirección:", error);
-    
-  }
-  
-}
+  const handleSubmitAddress = async () => {
+    try {
+      await customEvent({
+        eventName: 'address_selected',
+        payload: {
+          address,
+          latitude: region?.latitude,
+          longitude: region?.longitude,
+          type: title,
+        },
+      });
+      onSelectLocation({ type: title, latitude: region?.latitude, longitude: region?.longitude, address });
+      onClose();
+    } catch (err) {
+      console.log('Error sending address:', err);
+    }
+  };
   return (
     <Modal
       animationType='slide'
@@ -200,33 +190,26 @@ const handleSubmitAddress = async () => {
           /> */}
         </View>
 
-        {text !== "" ? (
+        {query !== '' ? (
           <FlatList
             ListHeaderComponent={
-              <View>
-                {text.length > 4 ? null :
-                  <Text style={{ marginHorizontal: 16 }}>
-                    Introduzca los últimos 4 caracteres para buscar
-                  </Text>
-                }
-              </View>
+              <View>{query.length > 4 ? null : <Text style={{ margin: 16 }}>Introduzca los últimos 4 caracteres para buscar</Text>}</View>
             }
             data={locations}
-            renderItem={renderLocations}
-            keyExtractor={(item: any) => item.place_id}
-            initialNumToRender={5}
-            windowSize={5}
+            renderItem={({ item }) => <LocationItem item={item} onPress={() => addLocation(item.place_id, item.description)} />}
+            keyExtractor={item => item.place_id}
           />
         ) : (
           <>
-            <View style={{ flex: 1, width: "100%" }}>
+            <View style={{ flex: 1, width: '100%' }}>
               <Mapbox.MapView
                 ref={mapRef}
                 style={{ flex: 1 }}
-                onRegionDidChange={handleRegionDidChange}
+                onRegionWillChange={handleRegionWillChange}   // ← new
+                onRegionDidChange={handleRegionDidChange}     // ← modified
+                onDidFinishLoadingMap={handleGpsButtonPress}
                 logoEnabled={false}
                 scaleBarEnabled={false}
-                onDidFinishLoadingMap={handleGpsButtonPress}
                 styleURL='mapbox://styles/mapbox/dark-v11'
                 attributionEnabled={false}
               >
@@ -237,33 +220,37 @@ const handleSubmitAddress = async () => {
                   animationDuration={100}
                   defaultSettings={{
                     centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
-                    zoomLevel: 16
+                    zoomLevel: 16,
                   }}
                 />
               </Mapbox.MapView>
+
+              {/* Center marker */}
               <View style={mapStyles.centerMarkerContainer}>
                 <Image
-                  source={title === "drop" ? require("@/assets/icons/drop_marker.png") : require("@/assets/icons/marker.png")}
+                  source={
+                    title === 'drop'
+                      ? require('@/assets/icons/drop_marker.png')
+                      : require('@/assets/icons/marker.png')
+                  }
                   style={mapStyles.marker}
                 />
               </View>
 
+              {/* GPS button */}
               <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
-                <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
+                <MaterialCommunityIcons name='crosshairs-gps' size={RFValue(16)} color='#3C75BE' />
               </TouchableOpacity>
             </View>
 
+            {/* Footer with address and submit */}
             <View style={modalStyles.footerContainer}>
               <Text style={modalStyles.addressText} numberOfLines={2}>
-                {address === "" ? "Obteniendo dirección..." : address}
+                {address || 'Obteniendo dirección...'}
               </Text>
               <View style={modalStyles.buttonContainer}>
-                <TouchableOpacity style={modalStyles.button}
-                  onPress={() => handleSubmitAddress()}
-                >
-                  <Text style={modalStyles.buttonText}>
-                    Establecer Dirección
-                  </Text>
+                <TouchableOpacity style={modalStyles.button} onPress={handleSubmitAddress}>
+                  <Text style={modalStyles.buttonText}>Establecer Dirección</Text>
                 </TouchableOpacity>
               </View>
             </View>

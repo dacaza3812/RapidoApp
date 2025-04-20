@@ -1,7 +1,7 @@
 import {Platform} from 'react-native'
 
-export const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || ""
+export const BASE_URL =  "https://server-react-native-app-1.onrender.com"
 
 
-export const SOCKET_URL = process.env.EXPO_PUBLIC_BASE_URLWS || ""
+export const SOCKET_URL = "wss://server-react-native-app-1.onrender.com"
 
