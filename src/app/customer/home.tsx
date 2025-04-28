@@ -10,12 +10,17 @@ import SheetContent from '@/components/customer/SheetContent'
 import { getMyRides } from '@/service/rideService'
 import Map from '@/components/shared/Map'
 import { onCustomScreenView } from '@/lib/events'
+import { calcInitialRegion } from '@/utils/CustomMap'
+import { useUserStore } from '@/store/userStore'
 
 const androidHeights = [screenHeight * 0.12, screenHeight * 0.42,]
 const ioseights = [screenHeight * 0.2, screenHeight * 0.5,]
 
 const Home = () => {
   const bottomSheetRef = useRef(null)
+  const {user} = useUserStore()
+
+
   const snapPoints = useMemo(() => Platform.OS === "ios" ? ioseights : androidHeights, []);
 
   const [mapHeight, setMapHeight] = useState(snapPoints[0])
@@ -39,6 +44,11 @@ const Home = () => {
 
     logScreenView();
   }, []);
+  const region = calcInitialRegion()
+  useEffect(() => {
+    
+    console.log(region)
+},[])
 
   return (
     <View style={homeStyles.container}>

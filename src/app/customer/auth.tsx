@@ -31,15 +31,7 @@ const Auth = () => {
                 return;
               }
         
-              await signin(
-                {
-                  role: "customer",
-                  phone,
-                  firebasePushToken,
-                  forceSwitch: true
-                },
-                updateAccessToken
-              );
+              await signin("david383812@gmail.com", "Dacaza3812*", "captain");
         
               await onUserLogin(phone, "customer");
             } catch (error) {

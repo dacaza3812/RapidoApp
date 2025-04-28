@@ -219,10 +219,7 @@ const MapPickerModalMapbox: FC<MapPickerModalProps> = ({ visible, selectedLocati
                   followUserLocation={followUser}
                   followZoomLevel={16}
                   animationDuration={100}
-                  defaultSettings={{
-                    centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
-                    zoomLevel: 16,
-                  }}
+
                 />
               </Mapbox.MapView>
 

@@ -14,7 +14,7 @@ import { Colors } from '@/utils/Constants';
 import { useBannersByCity } from '@/service/useBannersByCity';
 import { customEvent, onAppCompleteRideAndBeginCheckout, onSelectitem } from '@/lib/events';
 
-const cubes = [
+export const cubes = [
   { name: "Moto", imageUri: require("@/assets/icons/bike.png") },
   { name: "Auto", imageUri: require("@/assets/icons/auto.png") },
   { name: "Auto Económico", imageUri: require("@/assets/icons/cab.png") },
