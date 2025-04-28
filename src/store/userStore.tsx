@@ -1,6 +1,8 @@
 import {create} from 'zustand'
 import {createJSONStorage, persist} from 'zustand/middleware'
 import {mmkvStorage} from './storage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { User } from '@supabase/supabase-js';
 
 type CustomLocation = {
     latitude: number;
@@ -9,7 +11,7 @@ type CustomLocation = {
 } | null;
 
 interface UserStorageProps {
-    user: any;
+    user: User | null;
     location: CustomLocation;
     outOfRange: boolean;
     setUser: (data: any) => void;
@@ -34,7 +36,7 @@ export const useUserStore = create<UserStorageProps>()(
             partialize: (state) => ({
                 user: state.user,
             }),
-            storage: createJSONStorage(() => mmkvStorage),
+            storage: createJSONStorage(() => AsyncStorage),
         }
     )
 );

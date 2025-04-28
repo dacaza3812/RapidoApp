@@ -1,6 +1,8 @@
 import {create} from 'zustand'
 import {createJSONStorage, persist} from 'zustand/middleware'
 import {mmkvStorage} from './storage'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '@supabase/supabase-js';
 
 type CustomLocation = {
     latitude: number;
@@ -10,7 +12,7 @@ type CustomLocation = {
 } | null;
 
 interface CaptainStoreProps {
-    user: any;
+    user: User | null;
     location: CustomLocation;
     onDuty: boolean;
     setUser: (data: any) => void;
@@ -35,7 +37,7 @@ export const useCaptainStorage = create<CaptainStoreProps>()(
             partialize: (state) => ({
                 user: state.user,
             }),
-            storage: createJSONStorage(() => mmkvStorage),
+            storage: createJSONStorage(() => AsyncStorage),
         }
     )
 );
