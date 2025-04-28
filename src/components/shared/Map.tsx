@@ -8,7 +8,6 @@ import Mapbox, {
   ShapeSource,
   SymbolLayer
 } from '@rnmapbox/maps';
-import { useIsFocused } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RFValue } from 'react-native-responsive-fontsize';
@@ -16,167 +15,197 @@ import { mapStyles } from '@/styles/mapStyles';
 import { reverseGeocode } from '@/utils/mapUtils';
 import { useUserStore } from '@/store/userStore';
 import { featureCollection, point } from '@turf/helpers';
-import { useWS } from '@/service/WSProvider';
-import bike from '@/assets/icons/bike_marker.png';
-import auto from '@/assets/icons/auto_marker.png';
-import cab from '@/assets/icons/cab_marker.png';
-import captainIcon from '@/assets/icons/cab.png'; // Asegúrate de tener un ícono para los "captains"
+import captainIcon from '@/assets/icons/cab.png';
+import bikeIcon from '@/assets/icons/bike.png';
+import autoIcon from '@/assets/icons/auto.png';
+import autoPremium from '@/assets/icons/cab_premium.png';
+import { tunasIntialRegion } from '@/utils/CustomMap';
+import { supabase } from '@/lib/supabase';
 
-const accesToken =
-  'pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa2w0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A';
+// Tu Mapbox token
+const accesToken = 'pk.eyJ1IjoiZGFjYXphIiwiYSI6ImNsa3Q0Yzc2cDA1ZTUza3Bja3V6bHU0c20ifQ.TZYLa2XeoNUDXtxuPiRv2A';
 Mapbox.setAccessToken(accesToken);
+type RPCDATA = {
+  id: number;
+  user_id: string;
+  lat: number;
+  long: number;
+  type_car: string;
+  dist_meters: number;
+}
 
 const Map: FC<{ height: number }> = ({ height }) => {
   const mapRef = useRef<MapView>(null);
   const cameraRef = useRef<Camera>(null);
-  const { setLocation, location, outOfRange } = useUserStore();
+  const { setLocation, location, user } = useUserStore();
   const [captainMarkers, setCaptainMarkers] = useState<any[]>([]);
-  const [randomMarkers, setRandomMarkers] = useState<any[]>([]);
-  const { emit, on, off } = useWS();
-  const isFocused = useIsFocused();
+  const [pruebaMarkers, setpruebamarkers] = useState<RPCDATA[] >([]);
 
-  const askLocationAccess = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status === 'granted') {
-      try {
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        // Se puede centrar la cámara en la ubicación inicial
-        handleGpsButtonPress();
-      } catch (error) {
-        console.log('Error getting current location', error);
-      }
-    } else {
-      console.log('Permission to access location was denied');
-    }
-  };
+  const handleTest = async () => {
+    const { data: rpcData, error: errorRpc } = await supabase.rpc('nearby_rapido_users', {
+      p_lat: location?.latitude || tunasIntialRegion.latitude,
+      p_long: location?.longitude || tunasIntialRegion.longitude,
+      p_max_dist_meters: 3000
+    })
+    if(rpcData) setpruebamarkers(rpcData)
+    
+    console.log("RPC ", rpcData)
+    console.log("errorRpc ", errorRpc)
+  }
 
-  useEffect(() => {
-    askLocationAccess();
-  }, [mapRef, isFocused]);
-
-  // Manejo del WebSocket para los marcadores de "captains"
-  useEffect(() => {
-    if (location?.latitude && location?.longitude) {
-      emit('subscribeToZone', {
-        latitude: location.latitude,
-        longitude: location.longitude
-      });
-      on('nearbyCaptains', (captains: any[]) => {
-        const updatedMarkers = captains?.map((captain) => ({
-          id: captain?.id,
-          latitude: captain?.coords.latitude,
-          longitude: captain?.coords.longitude,
-          type: 'captain',
-          rotation: captain.coords.heading,
-          visible: true
-        }));
-        setCaptainMarkers(updatedMarkers);
-      });
-      return () => {
-        off('nearbyCaptains');
-      };
-    }
-  }, [location, emit, on, off]);
-
+  // 1. Centrar cámara y obtener dirección
   const handleGpsButtonPress = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = currentLocation.coords;
-        cameraRef.current?.setCamera({
-          centerCoordinate: [longitude, latitude],
-          zoomLevel: 16,
-          animationDuration: 200,
-          animationMode: "flyTo"
-        });
-        const address = await reverseGeocode(latitude, longitude);
-        setLocation({ latitude, longitude, address });
-      }
-    } catch (error) {
-      console.log('Error obteniendo la ubicación:', error);
-    }
-  };
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return;
+    const { coords } = await Location.getCurrentPositionAsync({});
+    const { latitude, longitude } = coords;
 
-  // Genera marcadores aleatorios sólo si se tiene una ubicación y no se está fuera de rango
-  const generateRandomMarkers = () => {
-    if (!location?.latitude || !location?.longitude || outOfRange) return;
-
-    const types = ["bike", "auto", "cab"];
-    const newMarkers = Array.from({ length: 20 }, (_, index) => {
-      const randomType = types[Math.floor(Math.random() * types.length)];
-      const randomRotation = Math.floor(Math.random() * 360);
-      return {
-        id: `random-${index}`,
-        latitude: location.latitude + (Math.random() - 0.5) * 0.01,
-        longitude: location.longitude + (Math.random() - 0.5) * 0.01,
-        type: randomType,
-        rotation: randomRotation,
-        visible: true
-      };
+    cameraRef.current?.setCamera({
+      centerCoordinate: [longitude, latitude],
+      zoomLevel: 16,
+      animationDuration: 200,
+      animationMode: 'flyTo'
     });
-    setRandomMarkers(newMarkers);
-  };
-/*
-  useEffect(() => {
-    generateRandomMarkers();
-  }, [location]);
-*/
-  // Filtrado de los marcadores por tipo
-  const bikeMarkers = randomMarkers.filter((marker) => marker.type === 'bike');
-  const autoMarkers = randomMarkers.filter((marker) => marker.type === 'auto');
-  const cabMarkers = randomMarkers.filter((marker) => marker.type === 'cab');
 
-  // Preparamos los datos para cada capa (usamos @turf/helpers para generar puntos)
+    const address = await reverseGeocode(latitude, longitude);
+    setLocation({ latitude, longitude, address });
+    
+  };
+
+  // 2. Al montar, pedimos ubicación inicial
+  useEffect(() => {
+    handleGpsButtonPress();
+  }, []);
+
+  // 3. Suscripción a TODOS los cambios en "rapido_locations_users"
+  useEffect(() => {
+    const channel = supabase
+      .channel('rapido_locations_users_changes')
+      .on('postgres_changes', {
+        schema: 'public',
+        table: 'rapido_locations_users',
+        event: '*'              // INSERT, UPDATE, DELETE
+      }, async () => {
+        // Tras cada cambio, recargar TODO el set de choferes
+        const { data: rpcData, error: errorRpc } = await supabase.rpc('nearby_rapido_users', {
+          p_lat: location?.latitude || tunasIntialRegion.latitude,
+          p_long: location?.longitude || tunasIntialRegion.longitude,
+          p_max_dist_meters: 3000,
+          p_province: user?.user_metadata.province
+        })
+        
+
+        if (errorRpc) {
+          console.error('Error al recargar choferes:', errorRpc);
+          return;
+        }
+        // Mapeamos cada registro a un marcador
+        const markers = (rpcData || []).map(record => ({
+          id: record.id,
+          latitude: record.lat,
+          longitude: record.long,
+          rotation: 0.1,
+          visible: true,
+          iconCar: record.type_car
+        }));
+        setCaptainMarkers(markers);
+      })
+      .subscribe();
+
+    return () => {
+      // Limpieza al desmontar
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+console.log("captainMarkers ",captainMarkers)
+  const bikeMarkers = captainMarkers.filter((marker) => marker.iconCar === 'bike');
   const bikeFeatures = bikeMarkers.map((marker) =>
     point([marker.longitude, marker.latitude], marker)
   );
-  const autoFeatures = autoMarkers.map((marker) =>
-    point([marker.longitude, marker.latitude], marker)
-  );
-  const cabFeatures = cabMarkers.map((marker) =>
-    point([marker.longitude, marker.latitude], marker)
-  );
-  const captainFeatures = captainMarkers.map((marker) =>
+
+  const autoMarker = captainMarkers.filter((marker) => marker.iconCar === 'auto');
+  const autoFeatures = autoMarker.map((marker) =>
     point([marker.longitude, marker.latitude], marker)
   );
 
-  const handleOnDidFinishLoadingMap = async () => {
-    await handleGpsButtonPress();
-  };
+  const cabMarker = captainMarkers.filter((marker) => marker.iconCar === 'cab');
+  const cabFeatures = cabMarker.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
+
+  const cabPremiumMarker = captainMarkers.filter((marker) => marker.iconCar === 'auto_premium');
+  const cabPremiumFeatures = cabPremiumMarker.map((marker) =>
+    point([marker.longitude, marker.latitude], marker)
+  );
+  // pruebaMarkers
+  const preuba = pruebaMarkers?.filter((marker) => marker.type_car === 'auto_premium');
+  const cabPremiumFeaturesPrueba = preuba?.map((marker) =>
+    point([marker.long, marker.lat], marker)
+  );
 
   return (
-    <View style={{ height: height, width: '100%' }}>
+    <View style={{ height, width: '100%' }}>
       <Mapbox.MapView
-        scaleBarEnabled={false}
-        logoEnabled={false}
         ref={mapRef}
         style={{ flex: 1 }}
-        onDidFinishLoadingMap={handleOnDidFinishLoadingMap}
+        onDidFinishLoadingMap={handleGpsButtonPress}
         styleURL='mapbox://styles/mapbox/dark-v11'
-        attributionEnabled={false}  
+        logoEnabled={false}
+        attributionEnabled={false}
       >
-        {/* Declaramos las imágenes sólo una vez */}
-        <Images images={{ bike, auto, cab, captain: captainIcon }} />
+        {/* Solo cargamos el ícono de captains */}
+        <Images images={{ captain: captainIcon, bike: bikeIcon, auto: autoIcon, autoPremium: autoPremium }} />
 
         <Camera
           ref={cameraRef}
           followZoomLevel={16}
-          followUserLocation={!!location?.latitude ? false : true}
-        />
-        <LocationPuck
-          puckBearingEnabled
-          puckBearing="heading"
-          pulsing={{ isEnabled: true }}
+          followUserLocation={false}
+          defaultSettings={{
+            centerCoordinate: [tunasIntialRegion.longitude, tunasIntialRegion.latitude],
+            zoomLevel: 1
+          }}
         />
 
-        {/* Capa para marcadores aleatorios */}
+        <LocationPuck puckBearingEnabled pulsing={{ isEnabled: true }} />
+
+        {/* Capa única de "captains" */}
+        {cabFeatures.length > 0 && (
+          <ShapeSource id="captains" shape={featureCollection(cabFeatures)}>
+            <SymbolLayer
+              id="captains-layer"
+              style={{
+                iconImage: 'captain',
+                iconAllowOverlap: true,
+                iconSize: 0.30,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
+
         {bikeFeatures.length > 0 && (
           <ShapeSource id="random-bikes" shape={featureCollection(bikeFeatures)}>
             <SymbolLayer
               id="random-bikes-layer"
               style={{
                 iconImage: 'bike',
+                iconAllowOverlap: true,
+                iconSize: 0.25,
+                iconAnchor: 'bottom',
+                iconRotate: ['get', 'rotation']
+              }}
+            />
+          </ShapeSource>
+        )}
+
+        {cabPremiumFeatures.length > 0 && (
+          <ShapeSource id="random-cabs-premium" shape={featureCollection(cabPremiumFeatures)}>
+            <SymbolLayer
+              id="random-cabs-premium-layer"
+              style={{
+                iconImage: 'autoPremium',
                 iconAllowOverlap: true,
                 iconSize: 0.25,
                 iconAnchor: 'bottom',
@@ -201,40 +230,15 @@ const Map: FC<{ height: number }> = ({ height }) => {
           </ShapeSource>
         )}
 
-        {cabFeatures.length > 0 && (
-          <ShapeSource id="random-cabs" shape={featureCollection(cabFeatures)}>
-            <SymbolLayer
-              id="random-cabs-layer"
-              style={{
-                iconImage: 'cab',
-                iconAllowOverlap: true,
-                iconSize: 0.25,
-                iconAnchor: 'bottom',
-                iconRotate: ['get', 'rotation']
-              }}
-            />
-          </ShapeSource>
-        )}
 
-        {/* Capa para los marcadores de "captains" recibidos vía WS */}
-        {captainFeatures.length > 0 && (
-          <ShapeSource id="captains" shape={featureCollection(captainFeatures)}>
-            <SymbolLayer
-              id="captains-layer"
-              style={{
-                iconImage: 'captain',
-                iconAllowOverlap: true,
-                iconSize: 0.25,
-                iconAnchor: 'bottom',
-                iconRotate: ['get', 'rotation']
-              }}
-            />
-          </ShapeSource>
-        )}
       </Mapbox.MapView>
 
       <TouchableOpacity style={mapStyles.gpsButton} onPress={handleGpsButtonPress}>
-        <MaterialCommunityIcons name="crosshairs-gps" size={RFValue(16)} color="#3C75BE" />
+        <MaterialCommunityIcons
+          name="crosshairs-gps"
+          size={RFValue(16)}
+          color="#3C75BE"
+        />
       </TouchableOpacity>
     </View>
   );

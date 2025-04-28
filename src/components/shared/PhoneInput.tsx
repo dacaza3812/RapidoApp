@@ -24,7 +24,7 @@ const PhoneInput: FC<PhoneInputProps> = ({
       </CustomText>
       <TextInput
         inputMode='tel'
-        autoFocus={true}
+        autoFocus={false}
         autoComplete='tel'  
         placeholder='51234567'
         keyboardType='phone-pad'
