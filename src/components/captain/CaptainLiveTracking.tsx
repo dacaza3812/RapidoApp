@@ -1,7 +1,7 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React, { FC, memo, useEffect, useRef, useState } from 'react'
 import MapView, { Marker, Polyline } from 'react-native-maps'
-import { customMapStyle, tunasIntialRegion } from '@/utils/CustomMap'
+import { calcInitialRegion, customMapStyle, tunasIntialRegion } from '@/utils/CustomMap'
 import MapViewDirectionsAlt from '../shared/MapViewDirectionsAlt'
 import { Colors } from '@/utils/Constants'
 import { getPoints } from '@/utils/mapUtils'
@@ -18,7 +18,7 @@ const CaptainLiveTracking: FC<{ drop: any, pickup: any, captain: any, status:str
     pickup,
     captain
 }) => {
-
+    
     const mapRef = useRef<MapView>(null)
     const [isUserInteracting, setIsUserInteracting] = useState(false)
 
