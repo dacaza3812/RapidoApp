@@ -2,7 +2,7 @@ import { tokenStorage } from "@/store/storage";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import {io, Socket} from 'socket.io-client'
 import { SOCKET_URL } from "./config";
-import { refresh_tokens } from "./apiInterceptors";
+import { appAxios } from "./apiInterceptors";
 
 interface WSService {
     initializeSocket: () => void;
@@ -44,7 +44,7 @@ export const WSProvider: React.FC<{children: React.ReactNode}> = ({children}) =>
             socket.current.on("connect_error", (error) => {
                 if(error.message === "Authentication error"){
                     console.log("Auth connection error: ", error.message)
-                    refresh_tokens()
+                    //refresh_tokens()
                 }
             })
         }

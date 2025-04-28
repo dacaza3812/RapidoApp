@@ -1,56 +1,32 @@
-import axios from "axios";
-import { BASE_URL } from "./config";
-import { tokenStorage } from "@/store/storage";
-import { resetAndNavigate } from "@/utils/Helpers";
-import { logout } from "./authService";
+import axios from 'axios'
+import { BASE_URL } from './config'
+import { supabase } from '@/lib/supabase'
+import { logout } from './authService'
 
-export const appAxios = axios.create({
-    baseURL: BASE_URL
+export const appAxios = axios.create({ baseURL: BASE_URL })
+
+// Agrega el access token de Supabase en cada petición
+appAxios.interceptors.request.use(async (config) => {
+  const session = supabase.auth.getSession()
+  const token = (await session).data?.session?.access_token
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
-export const refresh_tokens = async() => {
-    try {
-        const refreshToken = tokenStorage.getString("refresh_token")
-        const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {
-            refresh_token: refreshToken
-        })
-
-        const new_access_token = response.data.access_token
-        const new_refresh_token = response.data.access_token
-
-        tokenStorage.set("access_token", new_access_token)
-        tokenStorage.set("refresh_token", new_refresh_token)
-
-        return new_access_token
-    } catch (error) {
-        console.log("Refresh token error")
-        tokenStorage.clearAll()
-        logout()
-    }
-}
-
-appAxios.interceptors.request.use(async config => {
-    const accessToken = tokenStorage.getString("access_token")
-    if(accessToken){
-        config.headers.Authorization = `Bearer ${accessToken}`
-    }
-    return config
-})
-
+// Manejo de errores 401
 appAxios.interceptors.response.use(
-    response=>response,
-    async error => {
-        if(error.response && error.response.status === 401){
-            try {
-                const newAccessToken = await refresh_tokens()
-                if(newAccessToken){
-                    error.config.headers.Autorization = `Bearer ${newAccessToken}`;
-                    return axios(error.config)
-                }
-            } catch (error) {
-                console.log("Error refreshing token")
-            }
-        }
+  (res) => res,
+  async (err) => {
+    if (err.response?.status === 401) {
+      // Supabase maneja auto-refresh; reenviar petición
+      const { data, error } = await supabase.auth.refreshSession()
+      if (error) {
+        await logout()
         return Promise.reject(error)
+      }
+      err.config.headers.Authorization = `Bearer ${data.session?.access_token}`
+      return axios(err.config)
     }
+    return Promise.reject(err)
+  }
 )
