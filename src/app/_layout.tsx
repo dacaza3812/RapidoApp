@@ -18,6 +18,8 @@ const Layout = () => {
         <Stack.Screen name='customer/ridebooking' />
         <Stack.Screen name='customer/liveride' />
         <Stack.Screen name='captain/liveride' />
+        <Stack.Screen name='(onboarding)' />
+        <Stack.Screen name='(auth)' />
     </Stack>
     </WSProvider>
     

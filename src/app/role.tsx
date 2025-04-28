@@ -25,6 +25,7 @@ export const firebaseConfig = {
 */
 
 const Role = () => {
+  
     const handleCustomerPress = () => {
         router.navigate("/customer/auth")
     }
