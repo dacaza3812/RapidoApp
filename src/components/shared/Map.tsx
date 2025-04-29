@@ -45,7 +45,8 @@ const Map: FC<{ height: number }> = ({ height }) => {
     const { data: rpcData, error: errorRpc } = await supabase.rpc('nearby_rapido_users', {
       p_lat: location?.latitude || tunasIntialRegion.latitude,
       p_long: location?.longitude || tunasIntialRegion.longitude,
-      p_max_dist_meters: 3000
+      p_max_dist_meters: 3000,
+      p_province: "Las Tunas"
     })
     if(rpcData) setpruebamarkers(rpcData)
     
@@ -90,10 +91,11 @@ const Map: FC<{ height: number }> = ({ height }) => {
         const { data: rpcData, error: errorRpc } = await supabase.rpc('nearby_rapido_users', {
           p_lat: location?.latitude || tunasIntialRegion.latitude,
           p_long: location?.longitude || tunasIntialRegion.longitude,
-          p_max_dist_meters: 3000,
+          p_max_dist_meters: 30000,
           p_province: user?.user_metadata.province
         })
-        
+        console.log("rpcData ",rpcData)
+        console.log("errorRpc ",errorRpc)
 
         if (errorRpc) {
           console.error('Error al recargar choferes:', errorRpc);
@@ -118,7 +120,7 @@ const Map: FC<{ height: number }> = ({ height }) => {
     };
   }, []);
 
-console.log("captainMarkers ",captainMarkers)
+
   const bikeMarkers = captainMarkers.filter((marker) => marker.iconCar === 'bike');
   const bikeFeatures = bikeMarkers.map((marker) =>
     point([marker.longitude, marker.latitude], marker)
