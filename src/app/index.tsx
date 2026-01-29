@@ -56,7 +56,7 @@ const Main = () => {
         setDownloadUrl("https://www.apklis.cu/application/com.dacaza.rapido");
         setUpdateRequired(true);
       }
-      return isUpdateRequired;
+      return false;
     } catch (error) {
       // Alert.alert("Error de Comprobación", "No se pudo acceder al servidor para validar la versión de su dispositivo")
       console.error('Error al comprobar la versión:', error);
