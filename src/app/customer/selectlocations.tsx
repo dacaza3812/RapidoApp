@@ -24,21 +24,57 @@ type focusType = "destino" | "recogida"
 
 const Selectlocations = () => {
 
-  const {location, setLocation} = useUserStore()
+  const {location, setLocation, favorites, addFavorite, removeFavorite, isFavorite} = useUserStore()
 
   const [pickup, setPickup] = useState("")
   const [pickupCoords, setPickupCoords] = useState<any>(null)
   const [dropCoords, setDropCoords] = useState<any>(null)
   const [drop, setDrop] = useState("")
-  const [locations, setLocations] = useState([])
+  const [locations, setLocations] = useState<any[]>([])
   const [focusedInput, setFocusedInput] = useState<focusType>("destino")
   const [modalTitle, setModalTitle] = useState<focusType>("destino")
   const [isMapModalVisible, setMapModalVisible] = useState(false)
 
   const fetchLocation = async (query: string) => {
-    if(query?.length > 4){
+    if(query?.length > 2){
       const data = await getPlacesSuggestions(query)
-      setLocations(data)
+      
+      const favoriteResults = favorites.filter(fav => 
+        fav.title.toLowerCase().includes(query.toLowerCase()) ||
+        fav.description.toLowerCase().includes(query.toLowerCase())
+      ).map(fav => ({
+        place_id: fav.place_id,
+        title: fav.title,
+        description: fav.description,
+        isFavorite: true
+      }))
+      
+      const nonFavoriteResults = data.filter((item: any) => 
+        !favorites.some(fav => fav.place_id === item.place_id)
+      ).map((item: any) => ({
+        ...item,
+        isFavorite: false
+      }))
+      
+      const combinedResults = [...favoriteResults, ...nonFavoriteResults]
+      setLocations(combinedResults)
+    } else if (query?.length === 0) {
+      setLocations([])
+    }
+  }
+
+  const toggleFavorite = async (item: any) => {
+    if (isFavorite(item.place_id)) {
+      removeFavorite(item.place_id)
+    } else {
+      const locationData = await getLatLong(item.place_id, item.description)
+      addFavorite({
+        place_id: item.place_id,
+        title: item.title || item.description?.split(',')[0] || item.description,
+        description: item.description,
+        latitude: locationData?.latitude,
+        longitude: locationData?.longitude
+      })
     }
   }
 
@@ -117,7 +153,12 @@ const Selectlocations = () => {
 
   const renderLocations = ({item} :any) => {
     return (
-      <LocationItem item={item} onPress={() => addLocation(item?.place_id, item?.description)}/>
+      <LocationItem 
+        item={item} 
+        onPress={() => addLocation(item?.place_id, item?.description)}
+        isFavorite={item?.isFavorite || isFavorite(item?.place_id)}
+        onToggleFavorite={() => toggleFavorite(item)}
+      />
     )
   }
 
