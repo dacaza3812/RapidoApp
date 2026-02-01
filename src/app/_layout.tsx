@@ -12,10 +12,12 @@ const Layout = () => {
         <Stack.Screen name='role' />
         <Stack.Screen name='customer/auth' />
         <Stack.Screen name='captain/auth' />
+        <Stack.Screen name='store/auth' />
         <Stack.Screen name='captain/profile-setup' />
         <Stack.Screen name='customer/profile-setup' />
         <Stack.Screen name='captain/home' />
         <Stack.Screen name='customer/home' />
+        <Stack.Screen name='store/home' />
         <Stack.Screen name='customer/selectlocations' />
         <Stack.Screen name='customer/ridebooking' />
         <Stack.Screen name='customer/liveride' />

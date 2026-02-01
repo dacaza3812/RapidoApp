@@ -32,6 +32,10 @@ const Role = () => {
     const handleCaptainPress = () => {
         router.navigate("/captain/auth")
     }
+
+    const handleStorePress = () => {
+        router.navigate("/store/auth")
+    }
 /*
     if (!getApps().length) {
       initializeApp(firebaseConfig);
@@ -143,6 +147,26 @@ const Role = () => {
             <CustomText style={roleStyles.title}>Chofer</CustomText>
             <CustomText style={roleStyles.description}>
                 Únete a nosotros, maneja y entrega
+            </CustomText>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={roleStyles.card} 
+        onPress={handleStorePress}
+        testID="store-card"
+        accessibilityRole="button"
+        accessibilityLabel="Tienda"
+      >
+        <Image
+            source={require("@/assets/images/store.png")}
+            style={roleStyles.image}
+            accessibilityLabel="Icono de tienda"
+        />
+        <View style={roleStyles.cardContent}>
+            <CustomText style={roleStyles.title}>Tienda</CustomText>
+            <CustomText style={roleStyles.description}>
+                Vende tus productos y gestiona pedidos
             </CustomText>
         </View>
       </TouchableOpacity>

@@ -1,75 +1,115 @@
-// service/authService.tsx
-import { useCaptainStorage } from "@/store/captainStore";
+import { Alert } from "react-native";
+import { appAxios } from "./apiInterceptors";
+import { router } from "expo-router";
+import { resetAndNavigate } from "@/utils/Helpers";
 import { tokenStorage } from "@/store/storage";
 import { useUserStore } from "@/store/userStore";
-import { resetAndNavigate } from "@/utils/Helpers";
-import axios from "axios";
-import { Alert } from "react-native";
-import { BASE_URL } from "./config";
+import { useCaptainStorage } from "@/store/captainStore";
 
-export interface AuthPayload {
+export interface RegisterPayload {
   role: "customer" | "captain" | "store_owner";
   phone: string;
-  firebasePushToken: string | null;
-  forceSwitch?: boolean;
-  name?: string;
-  lastName?: string;
+  password: string;
+  name: string;
+  lastName: string;
   email?: string;
   avatarUrl?: string;
+  dateOfBirth?: string;
   gender?: "male" | "female" | "other" | "prefer_not_to_say";
+  // Captain specific
   dni?: string;
   vehicle?: {
-    type?: "bike" | "auto" | "car";
-    licensePlate?: string;
+    type: "bike" | "auto" | "car";
+    licensePlate: string;
     color?: string;
     model?: string;
   };
+  // Store specific
+  businessName?: string;
+  taxId?: string;
+  // Push token
+  firebasePushToken?: string | null;
 }
 
-export const signin = async (
-  payload: AuthPayload,
+export interface LoginPayload {
+  phone: string;
+  password: string;
+  role: "customer" | "captain" | "store_owner";
+  firebasePushToken?: string | null;
+}
+
+// REGISTRO - Solo crea usuarios nuevos
+export const register = async (
+  payload: RegisterPayload,
   updateAccessToken: () => void
 ) => {
-  const { setUser } = useUserStore.getState();
-  const { setUser: setCaptainUser } = useCaptainStorage.getState();
-
   try {
-    console.log("Payload de signin:", payload);
-    const res = await axios.post(`${BASE_URL}/api/v1/auth/signin`, payload);
+    const { setUser } = useUserStore.getState();
+    const { setUser: setCaptainUser } = useCaptainStorage.getState();
+
+    const res = await appAxios.post("/api/v1/auth/register", payload);
 
     const user = res.data.user;
-    const needsProfileSetup = !user.profile?.name || !user.profile?.lastName;
 
     tokenStorage.set("access_token", res.data.access_token);
     tokenStorage.set("refresh_token", res.data.refresh_token);
     updateAccessToken();
 
-    if (res.data.user.role === "customer") {
-      setUser(user);
-      if (needsProfileSetup) {
-        resetAndNavigate("/customer/profile-setup");
-      } else {
-        resetAndNavigate("/customer/home");
-      }
-    } else if (res.data.user.role === "captain") {
-      setCaptainUser(user);
-      // Check if captain has complete profile including vehicle
-      const hasProfileData = user.profile?.name && user.profile?.lastName && user.profile?.dni;
-      const hasVehicleData = user.vehicle?.licensePlate && user.vehicle?.type;
-      const captainNeedsSetup = !hasProfileData || !hasVehicleData;
-      
-      if (captainNeedsSetup) {
-        resetAndNavigate("/captain/profile-setup");
-      } else {
-        resetAndNavigate("/captain/home");
-      }
-    } else {
+    // Redirigir según el rol
+    if (user.role === "customer") {
       setUser(user);
       resetAndNavigate("/customer/home");
+    } else if (user.role === "captain") {
+      setCaptainUser(user);
+      resetAndNavigate("/captain/home");
+    } else if (user.role === "store_owner") {
+      setUser(user);
+      resetAndNavigate("/store/home");
     }
+
+    return { success: true, user };
   } catch (error: any) {
-    Alert.alert("Error: ", error?.response?.data?.msg || error?.message || "Error al iniciar sesión");
-    console.log("Error: ", error?.response?.data?.msg || error?.message);
+    const errorMsg = error?.response?.data?.msg || "Error al registrar usuario";
+    Alert.alert("Error", errorMsg);
+    console.log("Register error:", error?.response?.data || error);
+    throw error;
+  }
+};
+
+// LOGIN - Solo autentica usuarios existentes
+export const login = async (
+  payload: LoginPayload,
+  updateAccessToken: () => void
+) => {
+  try {
+    const { setUser } = useUserStore.getState();
+    const { setUser: setCaptainUser } = useCaptainStorage.getState();
+
+    const res = await appAxios.post("/api/v1/auth/login", payload);
+
+    const user = res.data.user;
+
+    tokenStorage.set("access_token", res.data.access_token);
+    tokenStorage.set("refresh_token", res.data.refresh_token);
+    updateAccessToken();
+
+    // Redirigir según el rol
+    if (user.role === "customer") {
+      setUser(user);
+      resetAndNavigate("/customer/home");
+    } else if (user.role === "captain") {
+      setCaptainUser(user);
+      resetAndNavigate("/captain/home");
+    } else if (user.role === "store_owner") {
+      setUser(user);
+      resetAndNavigate("/store/home");
+    }
+
+    return { success: true, user };
+  } catch (error: any) {
+    const errorMsg = error?.response?.data?.msg || "Error al iniciar sesión";
+    Alert.alert("Error", errorMsg);
+    console.log("Login error:", error?.response?.data || error);
     throw error;
   }
 };
@@ -79,13 +119,20 @@ export const updateProfile = async (profileData: {
   lastName?: string;
   email?: string;
   avatarUrl?: string;
+  dateOfBirth?: string;
   gender?: string;
 }) => {
   try {
-    const res = await axios.patch(`${BASE_URL}/api/v1/auth/update-profile`, profileData);
+    const res = await appAxios.patch(
+      "/api/v1/auth/update-profile",
+      profileData
+    );
     return res.data.user;
   } catch (error: any) {
-    Alert.alert("Error", error?.response?.data?.msg || "Error al actualizar perfil");
+    Alert.alert(
+      "Error",
+      error?.response?.data?.msg || "Error al actualizar perfil"
+    );
     throw error;
   }
 };
@@ -104,10 +151,33 @@ export const updateCaptainProfile = async (profileData: {
   };
 }) => {
   try {
-    const res = await axios.patch(`${BASE_URL}/api/v1/auth/update-captain-profile`, profileData);
+    const res = await appAxios.patch(
+      "/api/v1/auth/update-captain-profile",
+      profileData
+    );
     return res.data.user;
   } catch (error: any) {
-    Alert.alert("Error", error?.response?.data?.msg || "Error al actualizar perfil");
+    Alert.alert(
+      "Error",
+      error?.response?.data?.msg || "Error al actualizar perfil"
+    );
+    throw error;
+  }
+};
+
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+  try {
+    const res = await appAxios.patch("/api/v1/auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+    Alert.alert("Éxito", "Contraseña actualizada correctamente");
+    return true;
+  } catch (error: any) {
+    Alert.alert(
+      "Error",
+      error?.response?.data?.msg || "Error al cambiar contraseña"
+    );
     throw error;
   }
 };

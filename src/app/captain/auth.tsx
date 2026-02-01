@@ -7,21 +7,24 @@ import CustomText from '@/components/shared/CustomText'
 import PhoneInput from '@/components/shared/PhoneInput'
 import CustomInput from '@/components/shared/CustomInput'
 import CustomButton from '@/components/shared/CustomButton'
-import { signin } from '@/service/authService'
+import { login, register } from '@/service/authService'
 import { useWS } from '@/service/WSProvider'
 import useGetFirebaseToken from '@/service/useGetFirebaseToken'
 import * as Linking from 'expo-linking'
 import { onUserLogin } from '@/lib/events'
-import { useUserStore } from '@/store/userStore'
 
 const CaptainAuth = () => {
   const { updateAccessToken } = useWS()
-  const [phone, setPhone] = useState('')
+  const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const { firebasePushToken } = useGetFirebaseToken()
-  const { user: customerUser } = useUserStore()
   const scrollViewRef = useRef<ScrollView>(null)
 
+  // Login fields
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+
+  // Register fields
   const [name, setName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -45,9 +48,25 @@ const CaptainAuth = () => {
     { label: 'Carro', value: 'car' },
   ]
 
-  const validateForm = useCallback(() => {
-    if (!phone || phone.length !== 8) {
-      Alert.alert('Número requerido', 'Por favor ingresa tu número de 8 dígitos')
+  const validateLogin = useCallback(() => {
+    if (!phone || phone.length < 8) {
+      Alert.alert('Error', 'Por favor ingresa un número de teléfono válido')
+      return false
+    }
+    if (!password || password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres')
+      return false
+    }
+    return true
+  }, [phone, password])
+
+  const validateRegister = useCallback(() => {
+    if (!phone || phone.length < 8) {
+      Alert.alert('Error', 'Por favor ingresa un número de teléfono válido')
+      return false
+    }
+    if (!password || password.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres')
       return false
     }
     if (!name.trim()) {
@@ -63,7 +82,7 @@ const CaptainAuth = () => {
       return false
     }
     if (!licensePlate.trim()) {
-      Alert.alert('Error', 'La placa es requerida')
+      Alert.alert('Error', 'La placa del vehículo es requerida')
       return false
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -71,35 +90,41 @@ const CaptainAuth = () => {
       return false
     }
     return true
-  }, [phone, name, lastName, dni, licensePlate, email])
+  }, [phone, password, name, lastName, dni, licensePlate, email])
 
-  const handleNext = useCallback(() => {
-    if (customerUser && customerUser.role === 'customer') {
-      Alert.alert(
-        'Cambiar a perfil Chofer',
-        'Vas a cambiar de cliente a chofer. ¿Deseas continuar?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Continuar', onPress: () => doSignin(true) },
-        ]
-      )
-    } else {
-      doSignin(false)
-    }
-  }, [customerUser])
-
-  const doSignin = useCallback(async (forceSwitch: boolean) => {
-    if (!validateForm()) return
+  const handleLogin = useCallback(async () => {
+    if (!validateLogin()) return
 
     try {
       setLoading(true)
-
-      await signin(
+      await login(
         {
           role: 'captain',
           phone,
+          password,
           firebasePushToken,
-          forceSwitch,
+        },
+        updateAccessToken
+      )
+      await onUserLogin(phone, 'captain')
+    } catch (error) {
+      console.error('Error en login:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [phone, password, firebasePushToken, updateAccessToken, validateLogin])
+
+  const handleRegister = useCallback(async () => {
+    if (!validateRegister()) return
+
+    try {
+      setLoading(true)
+      await register(
+        {
+          role: 'captain',
+          phone,
+          password,
+          firebasePushToken,
           name: name.trim(),
           lastName: lastName.trim(),
           email: email.trim() || undefined,
@@ -114,15 +139,13 @@ const CaptainAuth = () => {
         },
         updateAccessToken
       )
-
       await onUserLogin(phone, 'captain')
     } catch (error) {
-      console.error('Error en autenticación:', error)
-      Alert.alert('Error', 'Ocurrió un error al intentar iniciar sesión')
+      console.error('Error en registro:', error)
     } finally {
       setLoading(false)
     }
-  }, [phone, name, lastName, email, gender, dni, vehicleType, licensePlate, vehicleModel, vehicleColor, firebasePushToken, updateAccessToken, validateForm])
+  }, [phone, password, name, lastName, email, gender, dni, vehicleType, licensePlate, vehicleModel, vehicleColor, firebasePushToken, updateAccessToken, validateRegister])
 
   const handleGenderSelect = useCallback((value: string) => {
     setGender(prev => prev === value ? '' : value)
@@ -169,16 +192,42 @@ const CaptainAuth = () => {
           </View>
 
           <CustomText fontFamily="Medium" variant="h6">
-            Regístrate como Captain
+            {isLogin ? 'Inicia sesión como Chofer' : 'Regístrate como Chofer'}
           </CustomText>
 
           <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
-            Ingresa tus datos para comenzar a trabajar
+            {isLogin ? 'Ingresa tus credenciales para continuar' : 'Ingresa tus datos para registrarte'}
           </CustomText>
+
+          {/* Toggle Login/Register */}
+          <View style={{ flexDirection: 'row', marginVertical: 16, gap: 8 }}>
+            <TouchableOpacity
+              style={[
+                { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+                isLogin ? { backgroundColor: '#24A1DE' } : { backgroundColor: '#F0F0F0' }
+              ]}
+              onPress={() => setIsLogin(true)}
+            >
+              <CustomText variant="h7" fontFamily="Medium" style={{ color: isLogin ? '#FFF' : '#333' }}>
+                Iniciar sesión
+              </CustomText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+                !isLogin ? { backgroundColor: '#24A1DE' } : { backgroundColor: '#F0F0F0' }
+              ]}
+              onPress={() => setIsLogin(false)}
+            >
+              <CustomText variant="h7" fontFamily="Medium" style={{ color: !isLogin ? '#FFF' : '#333' }}>
+                Registrarse
+              </CustomText>
+            </TouchableOpacity>
+          </View>
 
           <View style={authStyles.formContainer}>
             <CustomText variant="h7" fontFamily="Medium" style={authStyles.sectionTitle}>
-              Datos de Contacto
+              Datos de acceso
             </CustomText>
 
             <PhoneInput
@@ -188,121 +237,137 @@ const CaptainAuth = () => {
             />
 
             <CustomInput
-              label="Nombre"
-              placeholder="Ingresa tu nombre"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
+              label="Contraseña"
+              placeholder="Mínimo 6 caracteres"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
             />
 
-            <CustomInput
-              label="Apellido"
-              placeholder="Ingresa tu apellido"
-              value={lastName}
-              onChangeText={setLastName}
-              autoCapitalize="words"
-            />
+            {!isLogin && (
+              <>
+                <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
+                  Datos personales
+                </CustomText>
 
-            <CustomInput
-              label="Email (opcional)"
-              placeholder="correo@ejemplo.com"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+                <CustomInput
+                  label="Nombre"
+                  placeholder="Ingresa tu nombre"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
 
-            <View style={authStyles.inputGroup}>
-              <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
-                Género (opcional)
-              </CustomText>
-              <View style={authStyles.chipContainer}>
-                {genderOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      authStyles.chip,
-                      gender === option.value && authStyles.chipSelected,
-                    ]}
-                    onPress={() => handleGenderSelect(option.value)}
-                    accessibilityLabel={option.label}
-                    accessibilityRole="button"
-                  >
-                    <CustomText
-                      variant="h8"
-                      fontFamily="Medium"
-                      style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
-                    >
-                      {option.label}
-                    </CustomText>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+                <CustomInput
+                  label="Apellido"
+                  placeholder="Ingresa tu apellido"
+                  value={lastName}
+                  onChangeText={setLastName}
+                  autoCapitalize="words"
+                />
 
-            <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 8 }]}>
-              Datos del Vehículo
-            </CustomText>
+                <CustomInput
+                  label="DNI"
+                  placeholder="Ingresa tu DNI"
+                  value={dni}
+                  onChangeText={setDni}
+                  keyboardType="numeric"
+                  maxLength={11}
+                />
 
-            <View style={authStyles.inputGroup}>
-              <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
-                Tipo de Vehículo
-              </CustomText>
-              <View style={authStyles.chipContainer}>
-                {vehicleTypeOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={[
-                      authStyles.chip,
-                      vehicleType === option.value && authStyles.chipSelected,
-                    ]}
-                    onPress={() => handleVehicleTypeSelect(option.value)}
-                    accessibilityLabel={option.label}
-                    accessibilityRole="button"
-                  >
-                    <CustomText
-                      variant="h8"
-                      fontFamily="Medium"
-                      style={vehicleType === option.value ? authStyles.chipTextSelected : authStyles.chipText}
-                    >
-                      {option.label}
-                    </CustomText>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+                <CustomInput
+                  label="Email (opcional)"
+                  placeholder="correo@ejemplo.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
 
-            <CustomInput
-              label="DNI"
-              placeholder="Ingresa tu DNI"
-              value={dni}
-              onChangeText={setDni}
-              keyboardType="numeric"
-              maxLength={11}
-            />
+                <View style={authStyles.inputGroup}>
+                  <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+                    Género (opcional)
+                  </CustomText>
+                  <View style={authStyles.chipContainer}>
+                    {genderOptions.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          authStyles.chip,
+                          gender === option.value && authStyles.chipSelected,
+                        ]}
+                        onPress={() => handleGenderSelect(option.value)}
+                        accessibilityLabel={option.label}
+                        accessibilityRole="button"
+                      >
+                        <CustomText
+                          variant="h8"
+                          fontFamily="Medium"
+                          style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                        >
+                          {option.label}
+                        </CustomText>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
 
-            <CustomInput
-              label="Placa"
-              placeholder="ABC123"
-              value={licensePlate}
-              onChangeText={setLicensePlate}
-              autoCapitalize="characters"
-              maxLength={10}
-            />
+                <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
+                  Datos del Vehículo
+                </CustomText>
 
-            <CustomInput
-              label="Modelo (opcional)"
-              placeholder="Ej: Toyota Corolla 2020"
-              value={vehicleModel}
-              onChangeText={setVehicleModel}
-            />
+                <View style={authStyles.inputGroup}>
+                  <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+                    Tipo de Vehículo *
+                  </CustomText>
+                  <View style={authStyles.chipContainer}>
+                    {vehicleTypeOptions.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          authStyles.chip,
+                          vehicleType === option.value && authStyles.chipSelected,
+                        ]}
+                        onPress={() => handleVehicleTypeSelect(option.value)}
+                        accessibilityLabel={option.label}
+                        accessibilityRole="button"
+                      >
+                        <CustomText
+                          variant="h8"
+                          fontFamily="Medium"
+                          style={vehicleType === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                        >
+                          {option.label}
+                        </CustomText>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
 
-            <CustomInput
-              label="Color (opcional)"
-              placeholder="Ej: Blanco"
-              value={vehicleColor}
-              onChangeText={setVehicleColor}
-            />
+                <CustomInput
+                  label="Placa *"
+                  placeholder="ABC123"
+                  value={licensePlate}
+                  onChangeText={setLicensePlate}
+                  autoCapitalize="characters"
+                  maxLength={10}
+                />
+
+                <CustomInput
+                  label="Modelo (opcional)"
+                  placeholder="Ej: Toyota Corolla 2020"
+                  value={vehicleModel}
+                  onChangeText={setVehicleModel}
+                />
+
+                <CustomInput
+                  label="Color (opcional)"
+                  placeholder="Ej: Blanco"
+                  value={vehicleColor}
+                  onChangeText={setVehicleColor}
+                />
+              </>
+            )}
           </View>
         </ScrollView>
 
@@ -316,8 +381,8 @@ const CaptainAuth = () => {
           </CustomText>
 
           <CustomButton
-            title="Registrarse"
-            onPress={handleNext}
+            title={isLogin ? 'Iniciar sesión' : 'Registrarse'}
+            onPress={isLogin ? handleLogin : handleRegister}
             loading={loading}
             disabled={loading}
           />

@@ -13,7 +13,7 @@ import useGetFirebaseToken from '@/service/useGetFirebaseToken'
 import * as Linking from 'expo-linking'
 import { onUserLogin } from '@/lib/events'
 
-const CustomerAuth = () => {
+const StoreAuth = () => {
   const { updateAccessToken } = useWS()
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -28,14 +28,8 @@ const CustomerAuth = () => {
   const [name, setName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [gender, setGender] = useState<string>('')
-
-  const genderOptions = [
-    { label: 'Masculino', value: 'male' },
-    { label: 'Femenino', value: 'female' },
-    { label: 'Otro', value: 'other' },
-    { label: 'Prefiero no decir', value: 'prefer_not_to_say' },
-  ]
+  const [businessName, setBusinessName] = useState('')
+  const [taxId, setTaxId] = useState('')
 
   const validateLogin = useCallback(() => {
     if (!phone || phone.length < 8) {
@@ -59,11 +53,19 @@ const CustomerAuth = () => {
       return false
     }
     if (!name.trim()) {
-      Alert.alert('Error', 'El nombre es requerido')
+      Alert.alert('Error', 'El nombre del propietario es requerido')
       return false
     }
     if (!lastName.trim()) {
-      Alert.alert('Error', 'El apellido es requerido')
+      Alert.alert('Error', 'El apellido del propietario es requerido')
+      return false
+    }
+    if (!businessName.trim()) {
+      Alert.alert('Error', 'El nombre del negocio es requerido')
+      return false
+    }
+    if (!taxId.trim()) {
+      Alert.alert('Error', 'El RUC/Tax ID es requerido')
       return false
     }
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -71,7 +73,7 @@ const CustomerAuth = () => {
       return false
     }
     return true
-  }, [phone, password, name, lastName, email])
+  }, [phone, password, name, lastName, businessName, taxId, email])
 
   const handleLogin = useCallback(async () => {
     if (!validateLogin()) return
@@ -80,14 +82,14 @@ const CustomerAuth = () => {
       setLoading(true)
       await login(
         {
-          role: 'customer',
+          role: 'store_owner',
           phone,
           password,
           firebasePushToken,
         },
         updateAccessToken
       )
-      await onUserLogin(phone, 'customer')
+      await onUserLogin(phone, 'store_owner')
     } catch (error) {
       console.error('Error en login:', error)
     } finally {
@@ -102,28 +104,25 @@ const CustomerAuth = () => {
       setLoading(true)
       await register(
         {
-          role: 'customer',
+          role: 'store_owner',
           phone,
           password,
           firebasePushToken,
           name: name.trim(),
           lastName: lastName.trim(),
           email: email.trim() || undefined,
-          gender: gender as 'male' | 'female' | 'other' | 'prefer_not_to_say' || undefined,
+          businessName: businessName.trim(),
+          taxId: taxId.trim(),
         },
         updateAccessToken
       )
-      await onUserLogin(phone, 'customer')
+      await onUserLogin(phone, 'store_owner')
     } catch (error) {
       console.error('Error en registro:', error)
     } finally {
       setLoading(false)
     }
-  }, [phone, password, name, lastName, email, gender, firebasePushToken, updateAccessToken, validateRegister])
-
-  const handleGenderSelect = useCallback((value: string) => {
-    setGender(prev => prev === value ? '' : value)
-  }, [])
+  }, [phone, password, name, lastName, email, businessName, taxId, firebasePushToken, updateAccessToken, validateRegister])
 
   return (
     <SafeAreaView style={authStyles.container}>
@@ -162,11 +161,11 @@ const CustomerAuth = () => {
           </View>
 
           <CustomText fontFamily="Medium" variant="h6">
-            {isLogin ? 'Inicia sesión' : 'Crea tu cuenta'}
+            {isLogin ? 'Inicia sesión como Tienda' : 'Registra tu Tienda'}
           </CustomText>
 
           <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
-            {isLogin ? 'Ingresa tus credenciales para continuar' : 'Ingresa tus datos para registrarte'}
+            {isLogin ? 'Ingresa tus credenciales para continuar' : 'Ingresa los datos de tu negocio'}
           </CustomText>
 
           {/* Toggle Login/Register */}
@@ -217,7 +216,7 @@ const CustomerAuth = () => {
             {!isLogin && (
               <>
                 <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
-                  Datos personales
+                  Datos del propietario
                 </CustomText>
 
                 <CustomInput
@@ -245,33 +244,25 @@ const CustomerAuth = () => {
                   autoCapitalize="none"
                 />
 
-                <View style={authStyles.inputGroup}>
-                  <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
-                    Género (opcional)
-                  </CustomText>
-                  <View style={authStyles.chipContainer}>
-                    {genderOptions.map((option) => (
-                      <TouchableOpacity
-                        key={option.value}
-                        style={[
-                          authStyles.chip,
-                          gender === option.value && authStyles.chipSelected,
-                        ]}
-                        onPress={() => handleGenderSelect(option.value)}
-                        accessibilityLabel={option.label}
-                        accessibilityRole="button"
-                      >
-                        <CustomText
-                          variant="h8"
-                          fontFamily="Medium"
-                          style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
-                        >
-                          {option.label}
-                        </CustomText>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
+                <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
+                  Datos del negocio
+                </CustomText>
+
+                <CustomInput
+                  label="Nombre del negocio *"
+                  placeholder="Ej: Tienda El Éxito"
+                  value={businessName}
+                  onChangeText={setBusinessName}
+                  autoCapitalize="words"
+                />
+
+                <CustomInput
+                  label="RUC / Tax ID *"
+                  placeholder="Ingresa el RUC o Tax ID"
+                  value={taxId}
+                  onChangeText={setTaxId}
+                  autoCapitalize="characters"
+                />
               </>
             )}
           </View>
@@ -298,4 +289,4 @@ const CustomerAuth = () => {
   )
 }
 
-export default CustomerAuth
+export default StoreAuth
