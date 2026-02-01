@@ -15,7 +15,7 @@ export const createRide = async (payload: {
     drop: coords
 }) => {
     try {
-        const res = await appAxios.post("/ride/create", payload)
+        const res = await appAxios.post("/api/v1/rides/create", payload)
         router?.navigate({
             pathname: "/customer/liveride",
             params: {
@@ -30,7 +30,7 @@ export const createRide = async (payload: {
 
 export const getMyRides = async (isCustomer: boolean = true) => {
     try {
-        const res = await appAxios.get("/ride/rides")
+        const res = await appAxios.get("/api/v1/rides/")
         const filterRides = res.data.rides?.filter((ride: any) => ride?.status != "COMPLETED")
         if(filterRides?.length > 0){
             router?.navigate({
@@ -48,7 +48,7 @@ export const getMyRides = async (isCustomer: boolean = true) => {
 
 export const acceptRideOffer = async (rideId: string) => {
     try {
-       const res = await appAxios.patch(`/ride/accept/${rideId}`);
+       const res = await appAxios.patch(`/api/v1/rides/accept/${rideId}`);
        resetAndNavigate({
         pathname: "/captain/liveride",
         params: {id: rideId}
@@ -61,7 +61,7 @@ export const acceptRideOffer = async (rideId: string) => {
 
 export const updateRideStatus = async (rideId: string, status: string) => {
     try {
-        const res = await appAxios.patch(`/ride/update/${rideId}`, {status});
+        const res = await appAxios.patch(`/api/v1/rides/update/${rideId}`, {status});
         return true
     } catch (error) {
         Alert.alert("Hubo un error")

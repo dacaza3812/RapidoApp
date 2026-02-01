@@ -20,7 +20,7 @@ export const useBannersByCity = () => {
       try {
         if (!city) return
         setProvincy(city)
-        const response = await axios.post(`${BASE_URL}/banner/by-city`, { cities: [city.toString()] });
+        const response = await axios.post(`${BASE_URL}/api/v1/banners/by-city`, { cities: [city.toString()] });
         setBanners(response.data.banners);
       } catch (err) {
         console.error("Error al obtener banners por ciudad:", err);
