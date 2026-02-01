@@ -53,7 +53,11 @@ export const signin = async (
       }
     } else if (res.data.user.role === "captain") {
       setCaptainUser(user);
-      const captainNeedsSetup = !user.profile?.name || !user.profile?.lastName || !user.profile?.dni;
+      // Check if captain has complete profile including vehicle
+      const hasProfileData = user.profile?.name && user.profile?.lastName && user.profile?.dni;
+      const hasVehicleData = user.vehicle?.licensePlate && user.vehicle?.type;
+      const captainNeedsSetup = !hasProfileData || !hasVehicleData;
+      
       if (captainNeedsSetup) {
         resetAndNavigate("/captain/profile-setup");
       } else {
