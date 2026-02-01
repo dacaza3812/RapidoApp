@@ -1,5 +1,5 @@
-import { View, SafeAreaView, Image, TouchableOpacity, Alert, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import { View, SafeAreaView, Image, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import React, { useState, useCallback } from 'react'
 import { authStyles } from '@/styles/authStyles'
 import { commonStyles } from '@/styles/commonStyles'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -44,7 +44,7 @@ const CaptainAuth = () => {
     { label: 'Carro', value: 'car' },
   ]
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     if (!phone || phone.length !== 8) {
       Alert.alert('Número requerido', 'Por favor ingresa tu número de 8 dígitos')
       return false
@@ -70,9 +70,9 @@ const CaptainAuth = () => {
       return false
     }
     return true
-  }
+  }, [phone, name, lastName, dni, licensePlate, email])
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (customerUser && customerUser.role === 'customer') {
       Alert.alert(
         'Cambiar a perfil Chofer',
@@ -85,9 +85,9 @@ const CaptainAuth = () => {
     } else {
       doSignin(false)
     }
-  }
+  }, [customerUser])
 
-  const doSignin = async (forceSwitch: boolean) => {
+  const doSignin = useCallback(async (forceSwitch: boolean) => {
     if (!validateForm()) return
 
     try {
@@ -121,165 +121,192 @@ const CaptainAuth = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [phone, name, lastName, email, gender, dni, vehicleType, licensePlate, vehicleModel, vehicleColor, firebasePushToken, updateAccessToken, validateForm])
+
+  const handleGenderSelect = useCallback((value: string) => {
+    setGender(prev => prev === value ? '' : value)
+  }, [])
+
+  const handleVehicleTypeSelect = useCallback((value: string) => {
+    setVehicleType(value)
+  }, [])
 
   return (
     <SafeAreaView style={authStyles.container}>
-      <ScrollView contentContainerStyle={authStyles.container} showsVerticalScrollIndicator={false}>
-        <View style={commonStyles.flexRowBetween}>
-          <Image
-            source={require('@/assets/images/captain_logo.png')}
-            style={authStyles.logo}
-          />
-          <TouchableOpacity
-            style={authStyles.flexRowGap}
-            onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="telegram" size={24} style={{ color: '#24A1DE' }} />
-            <CustomText fontFamily="Medium" variant="h7">
-              Soporte
-            </CustomText>
-          </TouchableOpacity>
-        </View>
-
-        <CustomText fontFamily="Medium" variant="h6">
-          Regístrate como Captain
-        </CustomText>
-
-        <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
-          Ingresa tus datos para comenzar a trabajar
-        </CustomText>
-
-        <View style={authStyles.formContainer}>
-          <CustomText variant="h7" fontFamily="Medium" style={authStyles.sectionTitle}>
-            Datos de Contacto
-          </CustomText>
-
-          <PhoneInput onChangeText={setPhone} value={phone} />
-
-          <CustomInput
-            label="Nombre"
-            placeholder="Ingresa tu nombre"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
-
-          <CustomInput
-            label="Apellido"
-            placeholder="Ingresa tu apellido"
-            value={lastName}
-            onChangeText={setLastName}
-            autoCapitalize="words"
-          />
-
-          <CustomInput
-            label="Email (opcional)"
-            placeholder="correo@ejemplo.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <View style={authStyles.inputGroup}>
-            <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
-              Género (opcional)
-            </CustomText>
-            <View style={authStyles.chipContainer}>
-              {genderOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    authStyles.chip,
-                    gender === option.value && authStyles.chipSelected,
-                  ]}
-                  onPress={() => setGender(gender === option.value ? '' : option.value)}
-                >
-                  <CustomText
-                    variant="h8"
-                    fontFamily="Medium"
-                    style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
-                  >
-                    {option.label}
-                  </CustomText>
-                </TouchableOpacity>
-              ))}
+      <KeyboardAvoidingView
+        style={authStyles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          contentContainerStyle={authStyles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={authStyles.headerContainer}>
+            <View style={commonStyles.flexRowBetween}>
+              <Image
+                source={require('@/assets/images/captain_logo.png')}
+                style={authStyles.logo}
+                accessibilityLabel="Logo de Captain"
+              />
+              <TouchableOpacity
+                style={authStyles.flexRowGap}
+                onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}
+                activeOpacity={0.7}
+                accessibilityLabel="Contactar soporte por Telegram"
+              >
+                <MaterialIcons name="telegram" size={24} style={{ color: '#24A1DE' }} />
+                <CustomText fontFamily="Medium" variant="h7">
+                  Soporte
+                </CustomText>
+              </TouchableOpacity>
             </View>
           </View>
 
-          <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
-            Datos del Vehículo
+          <CustomText fontFamily="Medium" variant="h6">
+            Regístrate como Captain
           </CustomText>
 
-          <View style={authStyles.inputGroup}>
-            <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
-              Tipo de Vehículo
+          <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
+            Ingresa tus datos para comenzar a trabajar
+          </CustomText>
+
+          <View style={authStyles.formContainer}>
+            <CustomText variant="h7" fontFamily="Medium" style={authStyles.sectionTitle}>
+              Datos de Contacto
             </CustomText>
-            <View style={authStyles.chipContainer}>
-              {vehicleTypeOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    authStyles.chip,
-                    vehicleType === option.value && authStyles.chipSelected,
-                  ]}
-                  onPress={() => setVehicleType(option.value)}
-                >
-                  <CustomText
-                    variant="h8"
-                    fontFamily="Medium"
-                    style={vehicleType === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+
+            <PhoneInput
+              label="Teléfono"
+              onChangeText={setPhone}
+              value={phone}
+            />
+
+            <CustomInput
+              label="Nombre"
+              placeholder="Ingresa tu nombre"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+            />
+
+            <CustomInput
+              label="Apellido"
+              placeholder="Ingresa tu apellido"
+              value={lastName}
+              onChangeText={setLastName}
+              autoCapitalize="words"
+            />
+
+            <CustomInput
+              label="Email (opcional)"
+              placeholder="correo@ejemplo.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <View style={authStyles.inputGroup}>
+              <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+                Género (opcional)
+              </CustomText>
+              <View style={authStyles.chipContainer}>
+                {genderOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      authStyles.chip,
+                      gender === option.value && authStyles.chipSelected,
+                    ]}
+                    onPress={() => handleGenderSelect(option.value)}
+                    accessibilityLabel={option.label}
+                    accessibilityRole="button"
                   >
-                    {option.label}
-                  </CustomText>
-                </TouchableOpacity>
-              ))}
+                    <CustomText
+                      variant="h8"
+                      fontFamily="Medium"
+                      style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                    >
+                      {option.label}
+                    </CustomText>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+
+            <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 8 }]}>
+              Datos del Vehículo
+            </CustomText>
+
+            <View style={authStyles.inputGroup}>
+              <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+                Tipo de Vehículo
+              </CustomText>
+              <View style={authStyles.chipContainer}>
+                {vehicleTypeOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      authStyles.chip,
+                      vehicleType === option.value && authStyles.chipSelected,
+                    ]}
+                    onPress={() => handleVehicleTypeSelect(option.value)}
+                    accessibilityLabel={option.label}
+                    accessibilityRole="button"
+                  >
+                    <CustomText
+                      variant="h8"
+                      fontFamily="Medium"
+                      style={vehicleType === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                    >
+                      {option.label}
+                    </CustomText>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <CustomInput
+              label="DNI"
+              placeholder="Ingresa tu DNI"
+              value={dni}
+              onChangeText={setDni}
+              keyboardType="numeric"
+              maxLength={11}
+            />
+
+            <CustomInput
+              label="Placa"
+              placeholder="ABC123"
+              value={licensePlate}
+              onChangeText={setLicensePlate}
+              autoCapitalize="characters"
+              maxLength={10}
+            />
+
+            <CustomInput
+              label="Modelo (opcional)"
+              placeholder="Ej: Toyota Corolla 2020"
+              value={vehicleModel}
+              onChangeText={setVehicleModel}
+            />
+
+            <CustomInput
+              label="Color (opcional)"
+              placeholder="Ej: Blanco"
+              value={vehicleColor}
+              onChangeText={setVehicleColor}
+            />
           </View>
-
-          <CustomInput
-            label="DNI"
-            placeholder="Ingresa tu DNI"
-            value={dni}
-            onChangeText={setDni}
-            keyboardType="numeric"
-            maxLength={11}
-          />
-
-          <CustomInput
-            label="Placa"
-            placeholder="ABC123"
-            value={licensePlate}
-            onChangeText={setLicensePlate}
-            autoCapitalize="characters"
-            maxLength={10}
-          />
-
-          <CustomInput
-            label="Modelo (opcional)"
-            placeholder="Ej: Toyota Corolla 2020"
-            value={vehicleModel}
-            onChangeText={setVehicleModel}
-          />
-
-          <CustomInput
-            label="Color (opcional)"
-            placeholder="Ej: Blanco"
-            value={vehicleColor}
-            onChangeText={setVehicleColor}
-          />
-        </View>
+        </ScrollView>
 
         <View style={authStyles.footerContainer}>
           <CustomText
             variant="h8"
             fontFamily="Regular"
-            style={[
-              commonStyles.lightText,
-              { textAlign: 'center', marginHorizontal: 20, marginBottom: 16 },
-            ]}
+            style={authStyles.termsText}
           >
             Al continuar, aceptas los términos y condiciones de Rapido
           </CustomText>
@@ -291,7 +318,7 @@ const CaptainAuth = () => {
             disabled={loading}
           />
         </View>
-      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }

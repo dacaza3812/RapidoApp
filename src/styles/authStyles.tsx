@@ -8,9 +8,12 @@ export const authStyles = StyleSheet.create({
         resizeMode: 'contain'
     },
     container: {
-        padding: 12,
         flex: 1,
         backgroundColor: Colors.background
+    },
+    scrollContent: {
+        padding: 12,
+        paddingBottom: 120,
     },
     flexRowGap: {
         flexDirection: 'row',
@@ -19,16 +22,9 @@ export const authStyles = StyleSheet.create({
     },
     formContainer: {
         marginTop: 20,
-        marginBottom: 100,
     },
-    footerContainer: {
-        position: 'absolute',
-        bottom: Platform.OS === 'android' ? 20 : 30,
-        width: screenWidth,
-        padding: 10,
-        justifyContent: 'center',
-        alignItems: "center",
-        backgroundColor: Colors.background,
+    headerContainer: {
+        marginBottom: 16,
     },
     sectionTitle: {
         marginBottom: 12,
@@ -63,5 +59,17 @@ export const authStyles = StyleSheet.create({
     },
     chipTextSelected: {
         color: '#FFF',
+    },
+    footerContainer: {
+        padding: 16,
+        backgroundColor: Colors.background,
+        borderTopWidth: 1,
+        borderTopColor: '#E0E0E0',
+    },
+    termsText: {
+        textAlign: 'center',
+        marginHorizontal: 20,
+        marginBottom: 16,
+        color: '#666',
     },
 })

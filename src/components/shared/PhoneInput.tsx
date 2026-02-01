@@ -9,60 +9,73 @@ interface PhoneInputProps {
     onChangeText: (text: string) => void;
     onBlur?: () => void;
     onFocus?: () => void;
+    label?: string;
 }
 
 const PhoneInput: FC<PhoneInputProps> = ({
     value,
     onChangeText,
     onBlur,
-    onFocus
+    onFocus,
+    label,
 }) => {
   return (
     <View style={styles.container}>
-      <CustomText fontFamily='Medium' style={styles.text}>
-      🇨🇺 +53
-      </CustomText>
-      <TextInput
-        inputMode='tel'
-        autoFocus={true}
-        autoComplete='tel'  
-        placeholder='51234567'
-        keyboardType='phone-pad'
-        maxLength={8}
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        placeholderTextColor={"#4d4a49"}
-        style={styles.input}
-      />
+      {label && <Text style={styles.label}>{label}</Text>}
+      <View style={styles.inputContainer}>
+        <Text style={styles.countryCode}>🇨🇺 +53</Text>
+        <TextInput
+            inputMode='tel'
+            autoFocus={true}
+            autoComplete='tel'
+            placeholder='51234567'
+            placeholderTextColor="#888"
+            keyboardType='phone-pad'
+            maxLength={8}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            style={styles.input}
+        />
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-        marginVertical: 15,
+        marginBottom: 16,
+    },
+    label: {
+        fontSize: RFValue(12),
+        fontFamily: 'Medium',
+        color: '#333',
+        marginBottom: 6,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         borderWidth: 1,
-        borderColor: Colors.primary,
-        borderRadius: 5,
-        paddingHorizontal: 10
+        borderColor: '#E0E0E0',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#FAFAFA',
+        height: 48,
+    },
+    countryCode: {
+        fontSize: RFValue(13),
+        fontFamily: 'Medium',
+        color: Colors.text,
+        marginRight: 8,
     },
     input: {
+        flex: 1,
         fontSize: RFValue(13),
-        fontFamily: "Medium",
-        height: 45,
-        width: "90%",
+        fontFamily: 'Medium',
+        height: '100%',
         color: Colors.text,
     },
-    text: {
-        fontSize: RFValue(13),
-        top: -1,
-        fontFamily: "Medium"
-    }
 })
 
 export default PhoneInput
