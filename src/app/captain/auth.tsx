@@ -1,129 +1,299 @@
-// captain/auth.tsx
-import {
-    View,
-    SafeAreaView,
-    Image,
-    TouchableOpacity,
-    Alert,
-  } from "react-native";
-  import React, { useState } from "react";
-  import { authStyles } from "@/styles/authStyles";
-  import { ScrollView } from "react-native-gesture-handler";
-  import { commonStyles } from "@/styles/commonStyles";
-  import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-  import CustomText from "@/components/shared/CustomText";
-  import PhoneInput from "@/components/shared/PhoneInput";
-  import CustomButton from "@/components/shared/CustomButton";
-  import { signin } from "@/service/authService";
-  import { useWS } from "@/service/WSProvider";
-  import useGetFirebaseToken from "@/service/useGetFirebaseToken";
-  import * as Linking from "expo-linking";
-  import { onUserLogin } from "@/lib/events";
-  import { useUserStore } from "@/store/userStore";
-  
-  const Auth = () => {
-    const { updateAccessToken } = useWS();
-    const [phone, setPhone] = useState("");
-    const [loading, setLoading] = useState(false);
-    const { firebasePushToken } = useGetFirebaseToken();
-    const { user: customerUser } = useUserStore(); // Usuario cliente previo
-  
-    const handleNext = () => {
-        if (customerUser && customerUser.role === "customer") {
-          Alert.alert(
-            "Cambiar a perfil Chofer",
-            "Vas a cambiar de cliente a chofer. ¿Deseas continuar?",
-            [
-              { text: "Cancelar", style: "cancel" },
-              { text: "Continuar", onPress: () => doSignin(true) }, // forceSwitch: true
-            ]
-          );
-        } else {
-          doSignin(false);
-        }
-      };
-    
-      const doSignin = async (forceSwitch: boolean) => {
-        try {
-          setLoading(true);
-    
-          if (!phone || phone.length !== 8) {
-            Alert.alert("Número requerido", "Por favor ingresa tu número de 8 dígitos");
-            return;
-          }
-    
-          await signin(
-            {
-              role: "captain",
-              phone,
-              firebasePushToken,
-              forceSwitch: true
-            },
-            updateAccessToken
-          );
-    
-          await onUserLogin(phone, "captain");
-        } catch (error) {
-          console.error("Error en autenticación:", error);
-          Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión");
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-    return (
-      <SafeAreaView style={authStyles.container}>
-        <ScrollView contentContainerStyle={authStyles.container}>
-          <View style={commonStyles.flexRowBetween}>
-            <Image
-              source={require("@/assets/images/captain_logo.png")}
-              style={authStyles.logo}
-            />
-            <TouchableOpacity
-              style={authStyles.flexRowGap}
-              onPress={() => Linking.openURL("https://t.me/rapidoappcuba")}
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="telegram" size={24} style={{ color: "#24A1DE" }} />
-              <CustomText fontFamily="Medium" variant="h7">
-                Soporte
-              </CustomText>
-            </TouchableOpacity>
-          </View>
-  
-          <CustomText fontFamily="Medium" variant="h6">
-            ¿Cuál es tu número de teléfono?
-          </CustomText>
-  
-          <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
-            Escriba su número de teléfono para proceder
-          </CustomText>
-  
-          <PhoneInput onChangeText={setPhone} value={phone} />
-  
-          <View style={authStyles.footerContainer}>
-            <CustomText
-              variant="h8"
-              fontFamily="Regular"
-              style={[
-                commonStyles.lightText,
-                { textAlign: "center", marginHorizontal: 20 },
-              ]}
-            >
-              Al continuar, aceptas los términos y condiciones de Rapido
+import { View, SafeAreaView, Image, TouchableOpacity, Alert, ScrollView } from 'react-native'
+import React, { useState } from 'react'
+import { authStyles } from '@/styles/authStyles'
+import { commonStyles } from '@/styles/commonStyles'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import CustomText from '@/components/shared/CustomText'
+import PhoneInput from '@/components/shared/PhoneInput'
+import CustomInput from '@/components/shared/CustomInput'
+import CustomButton from '@/components/shared/CustomButton'
+import { signin } from '@/service/authService'
+import { useWS } from '@/service/WSProvider'
+import useGetFirebaseToken from '@/service/useGetFirebaseToken'
+import * as Linking from 'expo-linking'
+import { onUserLogin } from '@/lib/events'
+import { useUserStore } from '@/store/userStore'
+
+const CaptainAuth = () => {
+  const { updateAccessToken } = useWS()
+  const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const { firebasePushToken } = useGetFirebaseToken()
+  const { user: customerUser } = useUserStore()
+
+  const [name, setName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [gender, setGender] = useState<string>('')
+  const [dni, setDni] = useState('')
+  const [licensePlate, setLicensePlate] = useState('')
+  const [vehicleModel, setVehicleModel] = useState('')
+  const [vehicleColor, setVehicleColor] = useState('')
+  const [vehicleType, setVehicleType] = useState<string>('auto')
+
+  const genderOptions = [
+    { label: 'Masculino', value: 'male' },
+    { label: 'Femenino', value: 'female' },
+    { label: 'Otro', value: 'other' },
+    { label: 'Prefiero no decir', value: 'prefer_not_to_say' },
+  ]
+
+  const vehicleTypeOptions = [
+    { label: 'Moto', value: 'bike' },
+    { label: 'Auto', value: 'auto' },
+    { label: 'Carro', value: 'car' },
+  ]
+
+  const validateForm = () => {
+    if (!phone || phone.length !== 8) {
+      Alert.alert('Número requerido', 'Por favor ingresa tu número de 8 dígitos')
+      return false
+    }
+    if (!name.trim()) {
+      Alert.alert('Error', 'El nombre es requerido')
+      return false
+    }
+    if (!lastName.trim()) {
+      Alert.alert('Error', 'El apellido es requerido')
+      return false
+    }
+    if (!dni.trim()) {
+      Alert.alert('Error', 'El DNI es requerido')
+      return false
+    }
+    if (!licensePlate.trim()) {
+      Alert.alert('Error', 'La placa es requerida')
+      return false
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert('Error', 'Ingresa un email válido')
+      return false
+    }
+    return true
+  }
+
+  const handleNext = () => {
+    if (customerUser && customerUser.role === 'customer') {
+      Alert.alert(
+        'Cambiar a perfil Chofer',
+        'Vas a cambiar de cliente a chofer. ¿Deseas continuar?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Continuar', onPress: () => doSignin(true) },
+        ]
+      )
+    } else {
+      doSignin(false)
+    }
+  }
+
+  const doSignin = async (forceSwitch: boolean) => {
+    if (!validateForm()) return
+
+    try {
+      setLoading(true)
+
+      await signin(
+        {
+          role: 'captain',
+          phone,
+          firebasePushToken,
+          forceSwitch,
+          name: name.trim(),
+          lastName: lastName.trim(),
+          email: email.trim() || undefined,
+          gender: gender as 'male' | 'female' | 'other' | 'prefer_not_to_say' || undefined,
+          dni: dni.trim(),
+          vehicle: {
+            type: vehicleType as 'bike' | 'auto' | 'car',
+            licensePlate: licensePlate.trim(),
+            model: vehicleModel.trim() || undefined,
+            color: vehicleColor.trim() || undefined,
+          },
+        },
+        updateAccessToken
+      )
+
+      await onUserLogin(phone, 'captain')
+    } catch (error) {
+      console.error('Error en autenticación:', error)
+      Alert.alert('Error', 'Ocurrió un error al intentar iniciar sesión')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <SafeAreaView style={authStyles.container}>
+      <ScrollView contentContainerStyle={authStyles.container} showsVerticalScrollIndicator={false}>
+        <View style={commonStyles.flexRowBetween}>
+          <Image
+            source={require('@/assets/images/captain_logo.png')}
+            style={authStyles.logo}
+          />
+          <TouchableOpacity
+            style={authStyles.flexRowGap}
+            onPress={() => Linking.openURL('https://t.me/rapidoappcuba')}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="telegram" size={24} style={{ color: '#24A1DE' }} />
+            <CustomText fontFamily="Medium" variant="h7">
+              Soporte
             </CustomText>
-  
-            <CustomButton
-              title="Siguiente"
-              onPress={handleNext}
-              loading={loading}
-              disabled={loading}
-            />
+          </TouchableOpacity>
+        </View>
+
+        <CustomText fontFamily="Medium" variant="h6">
+          Regístrate como Captain
+        </CustomText>
+
+        <CustomText variant="h7" fontFamily="Regular" style={commonStyles.lightText}>
+          Ingresa tus datos para comenzar a trabajar
+        </CustomText>
+
+        <View style={authStyles.formContainer}>
+          <CustomText variant="h7" fontFamily="Medium" style={authStyles.sectionTitle}>
+            Datos de Contacto
+          </CustomText>
+
+          <PhoneInput onChangeText={setPhone} value={phone} />
+
+          <CustomInput
+            label="Nombre"
+            placeholder="Ingresa tu nombre"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+
+          <CustomInput
+            label="Apellido"
+            placeholder="Ingresa tu apellido"
+            value={lastName}
+            onChangeText={setLastName}
+            autoCapitalize="words"
+          />
+
+          <CustomInput
+            label="Email (opcional)"
+            placeholder="correo@ejemplo.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <View style={authStyles.inputGroup}>
+            <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+              Género (opcional)
+            </CustomText>
+            <View style={authStyles.chipContainer}>
+              {genderOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    authStyles.chip,
+                    gender === option.value && authStyles.chipSelected,
+                  ]}
+                  onPress={() => setGender(gender === option.value ? '' : option.value)}
+                >
+                  <CustomText
+                    variant="h8"
+                    fontFamily="Medium"
+                    style={gender === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                  >
+                    {option.label}
+                  </CustomText>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  };
-  
-  export default Auth;
-  
+
+          <CustomText variant="h7" fontFamily="Medium" style={[authStyles.sectionTitle, { marginTop: 16 }]}>
+            Datos del Vehículo
+          </CustomText>
+
+          <View style={authStyles.inputGroup}>
+            <CustomText variant="h7" fontFamily="Medium" style={authStyles.label}>
+              Tipo de Vehículo
+            </CustomText>
+            <View style={authStyles.chipContainer}>
+              {vehicleTypeOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    authStyles.chip,
+                    vehicleType === option.value && authStyles.chipSelected,
+                  ]}
+                  onPress={() => setVehicleType(option.value)}
+                >
+                  <CustomText
+                    variant="h8"
+                    fontFamily="Medium"
+                    style={vehicleType === option.value ? authStyles.chipTextSelected : authStyles.chipText}
+                  >
+                    {option.label}
+                  </CustomText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <CustomInput
+            label="DNI"
+            placeholder="Ingresa tu DNI"
+            value={dni}
+            onChangeText={setDni}
+            keyboardType="numeric"
+            maxLength={11}
+          />
+
+          <CustomInput
+            label="Placa"
+            placeholder="ABC123"
+            value={licensePlate}
+            onChangeText={setLicensePlate}
+            autoCapitalize="characters"
+            maxLength={10}
+          />
+
+          <CustomInput
+            label="Modelo (opcional)"
+            placeholder="Ej: Toyota Corolla 2020"
+            value={vehicleModel}
+            onChangeText={setVehicleModel}
+          />
+
+          <CustomInput
+            label="Color (opcional)"
+            placeholder="Ej: Blanco"
+            value={vehicleColor}
+            onChangeText={setVehicleColor}
+          />
+        </View>
+
+        <View style={authStyles.footerContainer}>
+          <CustomText
+            variant="h8"
+            fontFamily="Regular"
+            style={[
+              commonStyles.lightText,
+              { textAlign: 'center', marginHorizontal: 20, marginBottom: 16 },
+            ]}
+          >
+            Al continuar, aceptas los términos y condiciones de Rapido
+          </CustomText>
+
+          <CustomButton
+            title="Registrarse"
+            onPress={handleNext}
+            loading={loading}
+            disabled={loading}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  )
+}
+
+export default CaptainAuth
