@@ -11,9 +11,12 @@ export const authStyles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.background
     },
+    flex1: {
+        flex: 1,
+    },
     scrollContent: {
         padding: 12,
-        paddingBottom: 120,
+        paddingBottom: 100,
     },
     flexRowGap: {
         flexDirection: 'row',

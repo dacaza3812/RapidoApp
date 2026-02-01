@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TextInput } from 'react-native'
 import React, { FC } from 'react'
 import { RFValue } from 'react-native-responsive-fontsize'
-import CustomText from './CustomText'
 import { Colors } from '@/utils/Constants'
 
 interface PhoneInputProps {
@@ -19,21 +18,26 @@ const PhoneInput: FC<PhoneInputProps> = ({
     onFocus,
     label,
 }) => {
+  const handleChangeText = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, '')
+    onChangeText(numericText)
+  }
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputContainer}>
         <Text style={styles.countryCode}>🇨🇺 +53</Text>
         <TextInput
-            inputMode='tel'
+            inputMode='numeric'
             autoFocus={true}
             autoComplete='tel'
             placeholder='51234567'
-            placeholderTextColor="#888"
-            keyboardType='phone-pad'
+            placeholderTextColor="#999"
+            keyboardType='number-pad'
             maxLength={8}
             value={value}
-            onChangeText={onChangeText}
+            onChangeText={handleChangeText}
             onFocus={onFocus}
             onBlur={onBlur}
             style={styles.input}
@@ -66,7 +70,7 @@ const styles = StyleSheet.create({
     countryCode: {
         fontSize: RFValue(13),
         fontFamily: 'Medium',
-        color: Colors.text,
+        color: '#333',
         marginRight: 8,
     },
     input: {
@@ -74,7 +78,7 @@ const styles = StyleSheet.create({
         fontSize: RFValue(13),
         fontFamily: 'Medium',
         height: '100%',
-        color: Colors.text,
+        color: '#333',
     },
 })
 

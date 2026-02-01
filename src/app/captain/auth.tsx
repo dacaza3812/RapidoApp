@@ -1,5 +1,5 @@
 import { View, SafeAreaView, Image, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { authStyles } from '@/styles/authStyles'
 import { commonStyles } from '@/styles/commonStyles'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -20,6 +20,7 @@ const CaptainAuth = () => {
   const [loading, setLoading] = useState(false)
   const { firebasePushToken } = useGetFirebaseToken()
   const { user: customerUser } = useUserStore()
+  const scrollViewRef = useRef<ScrollView>(null)
 
   const [name, setName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -134,14 +135,17 @@ const CaptainAuth = () => {
   return (
     <SafeAreaView style={authStyles.container}>
       <KeyboardAvoidingView
-        style={authStyles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        style={authStyles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
       >
         <ScrollView
+          ref={scrollViewRef}
+          style={authStyles.flex1}
           contentContainerStyle={authStyles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={true}
         >
           <View style={authStyles.headerContainer}>
             <View style={commonStyles.flexRowBetween}>
