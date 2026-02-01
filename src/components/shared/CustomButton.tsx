@@ -9,6 +9,7 @@ interface CustomButtonProps {
     title: string;
     disabled?: boolean;
     loading?: boolean;
+    testID?: string;
 }
 
 const CustomButton: FC<CustomButtonProps> = ({
@@ -21,6 +22,11 @@ const CustomButton: FC<CustomButtonProps> = ({
     <TouchableOpacity
         onPress={onPress}
         activeOpacity={0.8}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ disabled, busy: loading }}
+        testID="custom-button"
         style={[
             styles.container,
             {

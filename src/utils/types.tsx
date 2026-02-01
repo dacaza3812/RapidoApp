@@ -20,6 +20,8 @@ interface CustomTextProps {
     children: React.ReactNode;
     fontFamily?: 'SemiBold' | 'Regular' | 'Bold' | 'Medium' | 'Light';
     numberOfLines?: number;
+    testID?: string;
+    accessibilityLabel?: string;
 }
 
 export type lat1 = number

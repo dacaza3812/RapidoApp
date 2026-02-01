@@ -12,7 +12,27 @@
     "lint": "expo lint"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!((react-native.*|@react-native.*|expo.*|@expo.*|react-native-responsive-fontsize|@rnmapbox/.*|react-native-maps|react-native-mmkv|@gorhom/.*|react-native-gesture-handler|react-native-reanimated)/))"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.ts?(x)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
@@ -29,6 +49,7 @@
     "axios": "^1.7.9",
     "expo": "~52.0.23",
     "expo-blur": "~14.0.1",
+    "expo-build-properties": "~0.13.3",
     "expo-constants": "~17.0.3",
     "expo-dev-client": "~5.0.9",
     "expo-font": "~13.0.2",
@@ -67,6 +88,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/react-native": "^13.3.3",
     "@types/firebase": "^2.4.32",
     "@types/jest": "^29.5.12",
     "@types/mapbox__polyline": "^1.0.5",

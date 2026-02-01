@@ -9,18 +9,19 @@ interface CounterButtonProps {
     onPress: () => void;
     initialCount: number;
     onCountdownEnd: () => void;
+    disabled?: boolean;
 }
 
-const CounterButton:FC<CounterButtonProps> = ({title,initialCount,onCountdownEnd,onPress}) => {
+const CounterButton:FC<CounterButtonProps> = ({title,initialCount,onCountdownEnd,onPress,disabled}) => {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.container}>
+    <TouchableOpacity onPress={onPress} disabled={disabled} style={[styles.container, disabled && styles.disabledContainer]}>
       <CustomText fontFamily='Medium' fontSize={12} style={styles.text}>
         {title}
       </CustomText>
       <View style={styles.counter}>
         <CountdownCircleTimer
             onComplete={onCountdownEnd}
-            isPlaying
+            isPlaying={!disabled}
             duration={initialCount}
             size={30}
             strokeWidth={3}
@@ -43,6 +44,9 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         backgroundColor: Colors.primary,
+    },
+    disabledContainer: {
+        opacity: 0.5,
     },
     counter: {
         backgroundColor: "white",

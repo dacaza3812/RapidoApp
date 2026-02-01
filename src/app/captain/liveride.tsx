@@ -40,7 +40,7 @@ const CaptainLiveRide = () => {
             setLocation({
               latitude: latitude,
               longitude: longitude,
-              address: "Somewere",
+              address: "Somewhere",
               heading: heading as number,
             });
             setOnDuty(true);

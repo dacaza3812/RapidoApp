@@ -12,6 +12,8 @@ const Layout = () => {
         <Stack.Screen name='role' />
         <Stack.Screen name='customer/auth' />
         <Stack.Screen name='captain/auth' />
+        <Stack.Screen name='captain/profile-setup' />
+        <Stack.Screen name='customer/profile-setup' />
         <Stack.Screen name='captain/home' />
         <Stack.Screen name='customer/home' />
         <Stack.Screen name='customer/selectlocations' />
@@ -21,6 +23,7 @@ const Layout = () => {
     </Stack>
     </WSProvider>
     
+
   )
 }
 

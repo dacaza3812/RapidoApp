@@ -25,8 +25,16 @@ interface RideItem {
 
 const CaptainRidesItem: FC<{ item: RideItem, removeIt: () => void }> = ({ item, removeIt }) => {
     const { location } = useCaptainStorage()
+    const [loading, setLoading] = React.useState(false)
     const acceptRide = async () => {
-        acceptRideOffer(item?._id)
+        try {
+            setLoading(true)
+            await acceptRideOffer(item?._id)
+        } catch (error) {
+            console.error("Error accepting ride:", error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -123,7 +131,8 @@ const CaptainRidesItem: FC<{ item: RideItem, removeIt: () => void }> = ({ item, 
                     onCountdownEnd={removeIt}
                     initialCount={30}
                     onPress={acceptRide}
-                    title="Aceptar"
+                    title={loading ? "Procesando..." : "Aceptar"}
+                    disabled={loading}
                 />
             </View>
 

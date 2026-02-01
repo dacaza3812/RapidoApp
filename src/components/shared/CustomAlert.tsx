@@ -27,16 +27,26 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
   customDialogStyle,
 }) => {
   return (
-    <Modal visible={visible} transparent>
-      <View style={[styles.modalContainer, customContainerStyle]}>
-        <View style={[styles.dialog, customDialogStyle]}>
-          <Text style={styles.dialogText}>{mainText}</Text>
-          <Text style={styles.dialogTextDescription}>{descriptionText}</Text>
-          <View style={styles.buttonContainer}>
-            <Pressable onPress={onLeftButtonPress}>
+    <Modal visible={visible} transparent testID="reusable-modal">
+      <View style={[styles.modalContainer, customContainerStyle]} testID="modal-container">
+        <View style={[styles.dialog, customDialogStyle]} testID="modal-dialog">
+          <Text style={styles.dialogText} testID="modal-main-text">{mainText}</Text>
+          <Text style={styles.dialogTextDescription} testID="modal-description">{descriptionText}</Text>
+          <View style={styles.buttonContainer} testID="modal-button-container">
+            <Pressable 
+              onPress={onLeftButtonPress}
+              testID="modal-left-button"
+              accessibilityRole="button"
+              accessibilityLabel={leftButtonText}
+            >
               <Text style={styles.leftButtonText}>{leftButtonText}</Text>
             </Pressable>
-            <Pressable onPress={onRightButtonPress}>
+            <Pressable 
+              onPress={onRightButtonPress}
+              testID="modal-right-button"
+              accessibilityRole="button"
+              accessibilityLabel={rightButtonText}
+            >
               <Text style={styles.rightButtonText}>{rightButtonText}</Text>
             </Pressable>
           </View>
@@ -120,13 +130,18 @@ export const CustomModalAlert: React.FC<ReusableModalAlertProps> = ({
   customDialogStyle,
 }) => {
   return (
-    <Modal visible={visible} transparent>
-      <View style={[styles.modalContainer, customContainerStyle]}>
-        <View style={[styles.dialog, customDialogStyle]}>
-          <Text style={styles.dialogText}>{mainText}</Text>
-          <Text style={styles.dialogTextDescription}>{descriptionText}</Text>
-          <View style={styles.buttonContainer}>
-            <Pressable onPress={onCenterButtonPress}>
+    <Modal visible={visible} transparent testID="custom-modal-alert">
+      <View style={[styles.modalContainer, customContainerStyle]} testID="alert-container">
+        <View style={[styles.dialog, customDialogStyle]} testID="alert-dialog">
+          <Text style={styles.dialogText} testID="alert-main-text">{mainText}</Text>
+          <Text style={styles.dialogTextDescription} testID="alert-description">{descriptionText}</Text>
+          <View style={styles.buttonContainer} testID="alert-button-container">
+            <Pressable 
+              onPress={onCenterButtonPress}
+              testID="alert-center-button"
+              accessibilityRole="button"
+              accessibilityLabel={centerText}
+            >
               <Text style={styles.centerButtonPress}>{centerText}</Text>
             </Pressable>
           </View>

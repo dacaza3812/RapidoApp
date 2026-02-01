@@ -107,10 +107,17 @@ const Role = () => {
         Elija su tipo de usuario
       </CustomText>
 
-      <TouchableOpacity style={roleStyles.card} onPress={handleCustomerPress}>
+      <TouchableOpacity 
+        style={roleStyles.card} 
+        onPress={handleCustomerPress}
+        testID="customer-card"
+        accessibilityRole="button"
+        accessibilityLabel="Cliente"
+      >
         <Image
             source={require("@/assets/images/customer.png")}
             style={roleStyles.image}
+            accessibilityLabel="Icono de cliente"
         />
         <View style={roleStyles.cardContent}>
             <CustomText style={roleStyles.title}>Cliente</CustomText>
@@ -120,10 +127,17 @@ const Role = () => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity style={roleStyles.card} onPress={handleCaptainPress}>
+      <TouchableOpacity 
+        style={roleStyles.card} 
+        onPress={handleCaptainPress}
+        testID="captain-card"
+        accessibilityRole="button"
+        accessibilityLabel="Chofer"
+      >
         <Image
             source={require("@/assets/images/captain.png")}
             style={roleStyles.image}
+            accessibilityLabel="Icono de chofer"
         />
         <View style={roleStyles.cardContent}>
             <CustomText style={roleStyles.title}>Chofer</CustomText>

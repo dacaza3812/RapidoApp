@@ -1,5 +1,5 @@
 import { View, Text, StatusBar, FlatList, Image } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { getMyRides } from '@/service/rideService'
 import { homeStyles } from '@/styles/homeStyles'
 import CaptainHeader from '@/components/captain/CaptainHeader'
@@ -34,22 +34,30 @@ const Home = () => {
   
   useEffect(() => {
     let locationsSubscription: any;
+    let isActive = true;
+
     const startLocationUpdates = async () => {
-      const {status} = await Location.requestForegroundPermissionsAsync()
-      if(status === "granted"){
-        locationsSubscription = await Location.watchPositionAsync({
-          accuracy: Location.Accuracy.High,
-          timeInterval: 10000,
-          distanceInterval: 10
-        }, (location) => {
-          const {latitude, longitude, heading} = location.coords
-          setLocation({latitude: latitude, longitude: longitude, address: "Somewhere", heading: heading as number})
-          emit("updateLocation", {
-            latitude,
-            longitude,
-            heading
+      try {
+        const {status} = await Location.requestForegroundPermissionsAsync()
+        if(status === "granted" && isActive){
+          locationsSubscription = await Location.watchPositionAsync({
+            accuracy: Location.Accuracy.High,
+            timeInterval: 10000,
+            distanceInterval: 10
+          }, (location) => {
+            if(isActive){
+              const {latitude, longitude, heading} = location.coords
+              setLocation({latitude: latitude, longitude: longitude, address: "Somewhere", heading: heading as number})
+              emit("updateLocation", {
+                latitude,
+                longitude,
+                heading
+              })
+            }
           })
-        })
+        }
+      } catch (error) {
+        console.error("Error starting location updates:", error)
       }
     }
 
@@ -58,12 +66,13 @@ const Home = () => {
     }
 
     return () => {
+      isActive = false
       if(locationsSubscription){
-        locationsSubscription.remove();
+        locationsSubscription.remove()
       }
     }
 
-  }, [onDuty, isFocused])
+  }, [onDuty, isFocused, setLocation, emit])
 
   useEffect(() => {
     if(onDuty && isFocused){
@@ -85,15 +94,15 @@ const Home = () => {
 
   
 
-  const removeRide = (id: string) => {
+  const removeRide = useCallback((id: string) => {
     setRideOffers((prevOffers) => prevOffers.filter((offer) => offer._id !== id));
-  }
+  }, [])
 
-  const renderRides = ({item}: any) => {
+  const renderRides = useCallback(({item}: any) => {
     return(
       <CaptainRidesItem removeIt={() => removeRide(item?._id)} item={item} />
     )
-  }
+  }, [removeRide])
 
   return (
     <View style={homeStyles.container}>
@@ -122,4 +131,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default React.memo(Home)

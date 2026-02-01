@@ -11,7 +11,7 @@ export const appAxios = axios.create({
 export const refresh_tokens = async() => {
     try {
         const refreshToken = tokenStorage.getString("refresh_token")
-        const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {
+        const response = await axios.post(`${BASE_URL}/api/v1/auth/refresh-token`, {
             refresh_token: refreshToken
         })
 

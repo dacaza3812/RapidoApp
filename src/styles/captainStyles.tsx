@@ -16,12 +16,19 @@ export const captainStyles = StyleSheet.create({
     toggleContainer: {
         paddingVertical: 0,
         paddingHorizontal: 15,
-        borderWidth: 1,
+        borderWidth:1,
         borderRadius: 100,
         flexDirection: 'row',
         borderColor: "white",
         alignItems: 'center',
-        gap: 5
+        gap:5
+    },
+    toggleContainerDisabled: {
+        opacity: 0.7,
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     emptyContainer: {
         flex: 1,

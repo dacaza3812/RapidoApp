@@ -41,9 +41,18 @@ export const WSProvider: React.FC<{children: React.ReactNode}> = ({children}) =>
                 }
             })
 
+            socket.current.on("connect", () => {
+                console.log("✅ Socket connected! ID:", socket.current?.id)
+            })
+
+            socket.current.on("disconnect", (reason) => {
+                console.log("🔌 Socket disconnected:", reason)
+            })
+
             socket.current.on("connect_error", (error) => {
+                console.error("❌ Socket connection error:", error.message)
                 if(error.message === "Authentication error"){
-                    console.log("Auth connection error: ", error.message)
+                    console.log("🔄 Auth connection error: ", error.message)
                     refresh_tokens()
                 }
             })
@@ -55,7 +64,11 @@ export const WSProvider: React.FC<{children: React.ReactNode}> = ({children}) =>
     }, [socketAccessToken])
 
     const emit = (event: string, data: any = {}) => {
-        socket.current?.emit(event, data)
+        if(socket.current?.connected){
+            socket.current.emit(event, data)
+        }else{
+            console.error("❌ Socket is not connected! Cannot emit event:", event)
+        }
     }
 
     const on = (event: string, cb: (data: any) => void) => {

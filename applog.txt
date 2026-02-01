@@ -1,0 +1,15 @@
+ (NOBRIDGE) ERROR  [Error: undefined Unable to resolve module ./materialtimepicker from D:\rapido-final\rapido\RAPIDO_OPEN\rapido_app\node_modules\@react-native-community\datetimepicker\src\androidUtils.js:
+
+None of these files exist:
+  * node_modules\@react-native-community\datetimepicker\src\materialtimepicker(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * node_modules\@react-native-community\datetimepicker\src\materialtimepicker
+  10 | import {processColor} from 'react-native';
+  11 | import MaterialDatePickerAndroid from './materialdatepicker';
+> 12 | import MaterialTimePickerAndroid from './materialtimepicker';
+     |                                        ^
+  13 |
+  14 | type Timestamp = number;
+  15 |]
+› Reloading apps
+Android Bundling failed 31ms node_modules\expo-router\entry.js (1 module)
+Unable to resolve "./materialtimepicker" from "node_modules\@react-native-community\datetimepicker\src\androidUtils.js"

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, Modal, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React, { FC, memo, useRef, useState } from 'react'
 import { modalStyles } from '@/styles/modalStyles';
 import { Colors } from '@/utils/Constants';
@@ -35,7 +35,7 @@ const OptInputModal: FC<OptInputModalProps> = ({visible,onClose,onConfirm,title}
             if(otpValue.length === 4){
                 onConfirm(otpValue)
             }else{
-                alert("Por favor, ponga los 4 dígitos OTP")
+                Alert.alert("OTP incompleto", "Por favor, ingrese los 4 dígitos OTP")
             }
     };
 
