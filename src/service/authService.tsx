@@ -5,6 +5,7 @@ import { resetAndNavigate } from "@/utils/Helpers";
 import { tokenStorage } from "@/store/storage";
 import { useUserStore } from "@/store/userStore";
 import { useCaptainStorage } from "@/store/captainStore";
+import { initializeNotifications, getPushToken, savePushTokenToBackend } from "./notificationService";
 
 export interface RegisterPayload {
   role: "customer" | "captain" | "store_owner";
@@ -55,6 +56,13 @@ export const register = async (
     tokenStorage.set("refresh_token", res.data.refresh_token);
     updateAccessToken();
 
+    // Inicializar notificaciones push
+    await initializeNotifications();
+    const pushToken = await getPushToken();
+    if (pushToken) {
+      await savePushTokenToBackend(pushToken);
+    }
+
     // Redirigir según el rol
     if (user.role === "customer") {
       setUser(user);
@@ -92,6 +100,13 @@ export const login = async (
     tokenStorage.set("access_token", res.data.access_token);
     tokenStorage.set("refresh_token", res.data.refresh_token);
     updateAccessToken();
+
+    // Inicializar notificaciones push
+    await initializeNotifications();
+    const pushToken = await getPushToken();
+    if (pushToken) {
+      await savePushTokenToBackend(pushToken);
+    }
 
     // Redirigir según el rol
     if (user.role === "customer") {

@@ -4,12 +4,14 @@ import { Stack } from 'expo-router'
 import {gestureHandlerRootHOC} from 'react-native-gesture-handler'
 import { WSProvider } from '@/service/WSProvider'
 import { TripRestoration } from '@/components/shared/TripRestoration'
+import { NotificationHandler } from '@/components/shared/NotificationHandler'
 
 const Layout = () => {
   return (
     <WSProvider>
       <TripRestoration>
-        <Stack screenOptions={{headerShown: false}}>
+        <NotificationHandler>
+          <Stack screenOptions={{headerShown: false}}>
         <Stack.Screen name='index' />
         <Stack.Screen name='role' />
         <Stack.Screen name='customer/auth' />
@@ -25,10 +27,9 @@ const Layout = () => {
         <Stack.Screen name='customer/liveride' />
         <Stack.Screen name='captain/liveride' />
         </Stack>
+        </NotificationHandler>
       </TripRestoration>
     </WSProvider>
-    
-
   )
 }
 
