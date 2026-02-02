@@ -1,5 +1,6 @@
 import { Alert } from "react-native";
 import { appAxios } from "./apiInterceptors";
+import { useRidePersistStore } from "@/store/ridePersistStore";
 
 export interface Store {
   _id: string;
@@ -285,5 +286,97 @@ export const getProductCategories = async (): Promise<string[]> => {
   } catch (error: any) {
     console.error("Error al obtener categorías:", error);
     return [];
+  }
+};
+
+// Crear pedido/delivery (para clientes)
+export const createDelivery = async (
+  deliveryData: Partial<Delivery>
+): Promise<Delivery> => {
+  try {
+    const res = await appAxios.post("/api/v1/deliveries/create", deliveryData);
+    const delivery = res.data.delivery;
+    
+    // Guardar en storage persistente
+    const { setActiveDelivery } = useRidePersistStore.getState();
+    setActiveDelivery({
+      deliveryId: delivery._id,
+      orderNumber: delivery.orderNumber,
+      trackingCode: delivery.trackingCode,
+      status: delivery.status,
+      store: delivery.store,
+      items: delivery.items,
+      pricing: delivery.pricing,
+      pickup: delivery.pickup,
+      delivery: delivery.delivery,
+      captain: delivery.captain,
+      otp: delivery.otp,
+      createdAt: delivery.createdAt,
+    });
+    
+    Alert.alert("Éxito", "Pedido creado correctamente");
+    return delivery;
+  } catch (error: any) {
+    Alert.alert("Error", error?.response?.data?.msg || "Error al crear pedido");
+    throw error;
+  }
+};
+
+// Obtener mis deliveries (para clientes)
+export const getMyDeliveries = async (): Promise<Delivery[]> => {
+  try {
+    const res = await appAxios.get("/api/v1/deliveries/");
+    return res.data.deliveries || [];
+  } catch (error: any) {
+    Alert.alert("Error", error?.response?.data?.msg || "Error al obtener pedidos");
+    throw error;
+  }
+};
+
+// Aceptar delivery (para capitanes)
+export const acceptDelivery = async (deliveryId: string): Promise<void> => {
+  try {
+    const res = await appAxios.patch(`/api/v1/deliveries/${deliveryId}/accept`);
+    const delivery = res.data.delivery;
+    
+    // Guardar en storage persistente para el capitán
+    const { setAssignedDelivery } = useRidePersistStore.getState();
+    setAssignedDelivery({
+      deliveryId: delivery._id,
+      orderNumber: delivery.orderNumber,
+      trackingCode: delivery.trackingCode,
+      status: delivery.status,
+      store: delivery.store,
+      items: delivery.items,
+      pricing: delivery.pricing,
+      pickup: delivery.pickup,
+      delivery: delivery.delivery,
+      customer: delivery.customer,
+      otp: delivery.otp,
+      createdAt: delivery.createdAt,
+    });
+    
+    Alert.alert("Éxito", "Pedido aceptado");
+  } catch (error: any) {
+    Alert.alert("Error", error?.response?.data?.msg || "Error al aceptar pedido");
+    throw error;
+  }
+};
+
+// Actualizar estado de delivery
+export const updateDeliveryStatus = async (
+  deliveryId: string,
+  status: string
+): Promise<void> => {
+  try {
+    await appAxios.patch(`/api/v1/deliveries/${deliveryId}/status`, { status });
+    
+    // Actualizar en storage
+    const { updateDeliveryStatus } = useRidePersistStore.getState();
+    updateDeliveryStatus(deliveryId, status);
+    
+  } catch (error: any) {
+    Alert.alert("Error", error?.response?.data?.msg || "Error al actualizar estado");
+    throw error;
   }
 };

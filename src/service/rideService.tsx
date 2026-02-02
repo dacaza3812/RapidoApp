@@ -2,6 +2,7 @@ import { Alert } from "react-native"
 import { appAxios } from "./apiInterceptors";
 import { router } from "expo-router";
 import { resetAndNavigate } from "@/utils/Helpers";
+import { useRidePersistStore } from "@/store/ridePersistStore";
 
 interface coords {
     address: string,
@@ -16,10 +17,26 @@ export const createRide = async (payload: {
 }) => {
     try {
         const res = await appAxios.post("/api/v1/rides/create", payload)
+        const ride = res?.data?.ride;
+        
+        // Guardar en storage persistente
+        const { setActiveRide } = useRidePersistStore.getState();
+        setActiveRide({
+          rideId: ride._id,
+          status: ride.status,
+          pickup: ride.pickup,
+          drop: ride.drop,
+          fare: ride.fare,
+          vehicle: ride.vehicle,
+          otp: ride.otp,
+          captain: ride.captain,
+          createdAt: ride.createdAt,
+        });
+        
         router?.navigate({
             pathname: "/customer/liveride",
             params: {
-                id: res?.data?.ride?._id
+                id: ride?._id
             }
         })
     } catch (error: any) {
@@ -49,6 +66,22 @@ export const getMyRides = async (isCustomer: boolean = true) => {
 export const acceptRideOffer = async (rideId: string) => {
     try {
        const res = await appAxios.patch(`/api/v1/rides/accept/${rideId}`);
+       const ride = res?.data?.ride;
+       
+       // Guardar en storage persistente para el capitán
+       const { setAssignedRide } = useRidePersistStore.getState();
+       setAssignedRide({
+         rideId: ride._id,
+         status: ride.status,
+         pickup: ride.pickup,
+         drop: ride.drop,
+         fare: ride.fare,
+         vehicle: ride.vehicle,
+         otp: ride.otp,
+         customer: ride.customer,
+         createdAt: ride.createdAt,
+       });
+       
        resetAndNavigate({
         pathname: "/captain/liveride",
         params: {id: rideId}
